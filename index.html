@@ -3,109 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CYBER_CORE_HUB</title>
+    <title>CYBER_CRUNCH_CORE_v6.0</title>
     <style>
-        :root { --neon: #39ff14; --bg: #000; }
+        :root { --neon: #39ff14; --bg: #000; --accent: #ffffff; }
         body { background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; text-align: center; margin: 0; overflow-x: hidden; transition: 0.8s; }
-        body.void-mode { --neon: #bc13fe; }
+        
+        /* VOID THEME OVERRIDE */
+        body.void-mode { --neon: #bc13fe; --accent: #00d4ff; }
 
-        /* THE ARCADE CANVAS */
-        canvas { border: 2px solid var(--neon); background: #000; box-shadow: 0 0 15px var(--neon); margin: 10px auto; display: block; width: 85vw; height: 85vw; max-width: 350px; }
+        /* HEADER NAVIGATION */
+        .system-nav { 
+            display: flex; flex-direction: column; background: #111; 
+            border-bottom: 2px solid var(--neon); box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        .hub-link { 
+            padding: 15px; color: var(--neon); text-decoration: none; 
+            font-weight: bold; font-size: 1.1rem; letter-spacing: 2px;
+        }
+        .node-links { display: flex; justify-content: space-around; padding: 10px; background: #050505; }
+        .nav-item { color: var(--neon); text-decoration: none; font-size: 0.7rem; border: 1px solid var(--neon); padding: 5px 10px; border-radius: 4px; }
+        .nav-item.active { background: var(--neon); color: #000; }
 
-        /* SUB-NAVIGATION (The Three Nodes) */
-        .node-nav { display: flex; justify-content: center; gap: 10px; margin: 15px 0; }
-        .nav-btn { border: 1px solid var(--neon); padding: 8px; font-size: 0.7rem; color: var(--neon); text-decoration: none; border-radius: 5px; background: rgba(0,255,0,0.05); }
+        /* REVENUE UNITS */
+        .ad-slot { min-height: 55px; margin: 10px 0; display: flex; justify-content: center; align-items: center; }
 
-        /* REVENUE SLOTS */
-        .ad-slot { height: 50px; margin: 10px 0; display: flex; justify-content: center; align-items: center; }
+        /* ARCADE CORE */
+        canvas { border: 3px solid var(--neon); background: #000; box-shadow: 0 0 20px var(--neon); margin: 5px auto; display: block; width: 90vw; height: 90vw; max-width: 380px; }
+        
+        .stats { font-size: 1rem; margin: 10px 0; display: flex; justify-content: space-around; font-weight: bold; }
 
-        /* GAME CONTROLS */
-        .controls { display: grid; grid-template-columns: repeat(3, 65px); gap: 8px; justify-content: center; margin-bottom: 20px; }
-        .btn { width: 65px; height: 55px; background: #111; border: 2px solid var(--neon); color: var(--neon); font-size: 1.2rem; display: flex; align-items: center; justify-content: center; border-radius: 8px; touch-action: manipulation; }
+        /* TOUCH CONTROLS */
+        .controls { display: grid; grid-template-columns: repeat(3, 75px); gap: 10px; justify-content: center; margin: 15px 0 30px 0; }
+        .btn { width: 75px; height: 65px; background: #111; border: 2px solid var(--neon); color: var(--neon); font-size: 1.8rem; display: flex; align-items: center; justify-content: center; border-radius: 12px; touch-action: manipulation; }
         .btn:active { background: var(--neon); color: #000; }
         .up { grid-column: 2; } .left { grid-column: 1; grid-row: 2; } .down { grid-column: 2; grid-row: 2; } .right { grid-column: 3; grid-row: 2; }
     </style>
 </head>
 <body>
 
-    <div class="ad-slot">
-        <iframe data-aa='2426199' src='https://acceptable.a-ads.com/2426199/?size=Adaptive' style='border:0; width:300px; height:50px;'></iframe>
+<div class="system-nav">
+    <a href="https://hartensteindominic.github.io/" class="hub-link">◄ RETURN_TO_GATEWAY</a>
+    <div class="node-links">
+        <a href="https://hartensteindominic.github.io/Ad-Revenue/" class="nav-item">01_MISSION</a>
+        <a href="https://hartensteindominic.github.io/The-Void-Miner/" class="nav-item">02_VOID</a>
+        <a href="https://hartensteindominic.github.io/Cyber-Crunch/" class="nav-item active">03_CYBER</a>
     </div>
+</div>
 
-    <div class="node-nav">
-        <a href="https://hartensteindominic.github.io/Ad-Revenue/" class="nav-btn">01_MISSION</a>
-        <a href="https://hartensteindominic.github.io/The-Void-Miner/" class="nav-btn">02_VOID</a>
-        <a href="https://hartensteindominic.github.io/Cyber-Crunch/" class="nav-btn" style="background:var(--neon); color:#000;">03_ARCADE</a>
-    </div>
+<div class="ad-slot">
+    <iframe data-aa='2426199' src='https://acceptable.a-ads.com/2426199/?size=Adaptive' style='border:0; width:300px; height:50px;'></iframe>
+</div>
 
-    <div style="font-size: 0.9rem;">SCORE: <span id="scoreVal">0</span> | SPEED: <span id="speedVal">1.0x</span></div>
-    
-    <canvas id="cyberGame" width="400" height="400"></canvas>
+<div class="stats">
+    <span>SCORE: <span id="scoreVal">0</span></span>
+    <span>LVL: <span id="lvl">STABLE</span></span>
+</div>
 
-    <div class="controls">
-        <div class="btn up" ontouchstart="setDir('UP')">▲</div>
-        <div class="btn left" ontouchstart="setDir('LEFT')">◀</div>
-        <div class="btn down" ontouchstart="setDir('DOWN')">▼</div>
-        <div class="btn right" ontouchstart="setDir('RIGHT')">▶</div>
-    </div>
+<canvas id="cyberGame" width="400" height="400"></canvas>
 
-    <div class="ad-slot">
-        <iframe data-aa='2426201' src='https://acceptable.a-ads.com/2426201/?size=Adaptive' style='border:0; width:300px; height:50px;'></iframe>
-    </div>
+<div class="controls">
+    <div class="btn up" ontouchstart="setDir('UP')">▲</div>
+    <div class="btn left" ontouchstart="setDir('LEFT')">◀</div>
+    <div class="btn down" ontouchstart="setDir('DOWN')">▼</div>
+    <div class="btn right" ontouchstart="setDir('RIGHT')">▶</div>
+</div>
 
-    <script>
-        const canvas = document.getElementById("cyberGame");
-        const ctx = canvas.getContext("2d");
-        const box = 20;
-        let score = 0;
-        let snake = [{x: 9 * box, y: 10 * box}];
-        let food = {x: Math.floor(Math.random()*19)*box, y: Math.floor(Math.random()*19)*box};
-        let d;
-        let speed = 140;
+<div class="ad-slot">
+    <iframe data-aa='2426201' src='https://acceptable.a-ads.com/2426201/?size=Adaptive' style='border:0; width:300px; height:50px;'></iframe>
+</div>
 
-        function setDir(dir) {
-            if(dir == "LEFT" && d != "RIGHT") d = "LEFT";
-            if(dir == "UP" && d != "DOWN") d = "UP";
-            if(dir == "RIGHT" && d != "LEFT") d = "RIGHT";
-            if(dir == "DOWN" && d != "UP") d = "DOWN";
+<script>
+    const canvas = document.getElementById("cyberGame");
+    const ctx = canvas.getContext("2d");
+    const box = 20;
+    let score = 0;
+    let snake = [{x: 9 * box, y: 10 * box}];
+    let food = {x: Math.floor(Math.random()*19)*box, y: Math.floor(Math.random()*19)*box};
+    let d;
+    let speed = 140;
+
+    function setDir(dir) {
+        if(dir == "LEFT" && d != "RIGHT") d = "LEFT";
+        if(dir == "UP" && d != "DOWN") d = "UP";
+        if(dir == "RIGHT" && d != "LEFT") d = "RIGHT";
+        if(dir == "DOWN" && d != "UP") d = "DOWN";
+        if (navigator.vibrate) navigator.vibrate(15);
+    }
+
+    function draw() {
+        ctx.fillStyle = "black";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        for(let i=0; i<snake.length; i++){
+            ctx.fillStyle = (i == 0) ? "var(--accent)" : "var(--neon)";
+            ctx.fillRect(snake[i].x, snake[i].y, box-2, box-2);
         }
+        
+        ctx.fillStyle = "#ff003c";
+        ctx.fillRect(food.x, food.y, box-2, box-2);
 
-        function draw() {
-            ctx.fillStyle = "black";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            for(let i=0; i<snake.length; i++){
-                ctx.fillStyle = (i == 0) ? "white" : (document.body.classList.contains('void-mode') ? "#bc13fe" : "#39ff14");
-                ctx.fillRect(snake[i].x, snake[i].y, box-2, box-2);
+        let sX = snake[0].x; let sY = snake[0].y;
+        if(d == "LEFT") sX -= box; if(d == "UP") sY -= box;
+        if(d == "RIGHT") sX += box; if(d == "DOWN") sY += box;
+
+        if(sX == food.x && sY == food.y) {
+            score++;
+            document.getElementById("scoreVal").innerText = score;
+            food = {x: Math.floor(Math.random()*19)*box, y: Math.floor(Math.random()*19)*box};
+            
+            // PROGRESSIVE DIFFICULTY
+            if(score == 10) { speed = 110; document.getElementById("lvl").innerText = "TURBO"; restart(); }
+            if(score == 25) { 
+                speed = 80; 
+                document.body.classList.add('void-mode'); 
+                document.getElementById("lvl").innerText = "VOID"; 
+                restart(); 
             }
-            ctx.fillStyle = "#ff003c";
-            ctx.fillRect(food.x, food.y, box-2, box-2);
+        } else { snake.pop(); }
 
-            let sX = snake[0].x; let sY = snake[0].y;
-            if(d == "LEFT") sX -= box; if(d == "UP") sY -= box;
-            if(d == "RIGHT") sX += box; if(d == "DOWN") sY += box;
-
-            if(sX == food.x && sY == food.y) {
-                score++;
-                document.getElementById("scoreVal").innerText = score;
-                food = {x: Math.floor(Math.random()*19)*box, y: Math.floor(Math.random()*19)*box};
-                if(score == 10) { speed = 100; document.getElementById("speedVal").innerText = "1.5x"; restart(); }
-                if(score == 30) { speed = 70; document.body.classList.add('void-mode'); document.getElementById("speedVal").innerText = "2.0x"; restart(); }
-            } else { snake.pop(); }
-
-            let head = {x: sX, y: sY};
-            if(sX < 0 || sX >= 400 || sY < 0 || sY >= 400 || collision(head, snake)) {
-                location.reload(); // REFRESH FOR ADS
-            }
-            snake.unshift(head);
+        let head = {x: sX, y: sY};
+        if(sX < 0 || sX >= 400 || sY < 0 || sY >= 400 || collision(head, snake)) {
+            location.reload(); 
         }
+        snake.unshift(head);
+    }
 
-        function collision(head, array) {
-            for(let i=0; i<array.length; i++) { if(head.x == array[i].x && head.y == array[i].y) return true; }
-            return false;
-        }
+    function collision(head, array) {
+        for(let i=0; i<array.length; i++) { if(head.x == array[i].x && head.y == array[i].y) return true; }
+        return false;
+    }
 
-        function restart() { clearInterval(game); game = setInterval(draw, speed); }
-        let game = setInterval(draw, speed);
-    </script>
+    function restart() { clearInterval(game); game = setInterval(draw, speed); }
+    let game = setInterval(draw, speed);
+</script>
+
 </body>
 </html>
