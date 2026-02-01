@@ -85,6 +85,10 @@ function createMatrixRain() {
     window.addEventListener('resize', function() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
+        // Reinitialize drops array with new column count
+        const newColumns = Math.floor(canvas.width / 20);
+        drops.length = newColumns;
+        drops.fill(1);
     });
 }
 
