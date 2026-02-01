@@ -1,30 +1,78 @@
-<div style="background: #111; border-bottom: 1px solid var(--neon); padding: 10px; overflow: hidden; white-space: nowrap;">
-    <div id="news-ticker" style="display: inline-block; animation: scroll-text 15s linear infinite; font-size: 0.8rem; color: #ff4500;">
-        LOADING NETWORK INTELLIGENCE... LOADING NETWORK INTELLIGENCE... LOADING NETWORK INTELLIGENCE...
-    </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TERMINAL_GATEWAY</title>
+    <style>
+        :root { --neon: #00ffad; --bg: #050505; }
+        body { background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; margin: 0; padding-bottom: 50px; }
+        
+        /* Fixed News Ticker */
+        .news-bar { background: #111; border-bottom: 1px solid var(--neon); padding: 10px; overflow: hidden; white-space: nowrap; width: 100%; }
+        #news-ticker { display: inline-block; animation: scroll-text 15s linear infinite; font-size: 0.8rem; color: #ff4500; }
+        @keyframes scroll-text { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
+
+        .container { padding: 15px; max-width: 500px; margin: auto; }
+        .node-card { 
+            border: 1px solid var(--neon); margin: 15px 0; padding: 20px; 
+            background: #0a0a0a; display: block; text-decoration: none; color: var(--neon);
+            border-radius: 8px; box-shadow: 0 0 10px rgba(0, 255, 173, 0.2);
+        }
+        .node-card:active { background: var(--neon); color: black; }
+        .title { font-weight: bold; font-size: 1.2rem; margin-bottom: 5px; }
+        .desc { font-size: 0.75rem; opacity: 0.8; line-height: 1.4; }
+        
+        .ad-box { margin: 15px 0; display: flex; justify-content: center; min-height: 50px; }
+    </style>
+</head>
+<body>
+
+<div class="news-bar">
+    <div id="news-ticker">ESTABLISHING SECURE UPLINK TO ALL NODES... STANDBY...</div>
 </div>
 
-<style>
-    @keyframes scroll-text {
-        from { transform: translateX(100%); }
-        to { transform: translateX(-100%); }
-    }
-</style>
+<div class="container">
+    <h2 style="text-align:center; letter-spacing: 2px;">NETWORK_GATEWAY</h2>
+
+    <div class="ad-box">
+        <iframe data-aa='2426199' src='https://acceptable.a-ads.com/2426199/?size=Adaptive' style='border:0; width:300px; height:50px;'></iframe>
+    </div>
+
+    <a href="https://hartensteindominic.github.io/Ad-Rev/" class="node-card">
+        <div class="title">[ NODE_01: MISSION_CONTROL ]</div>
+        <div class="desc">ROCKET_LAUNCH_UPLINK. Visual hype node for short sessions.</div>
+    </a>
+
+    <a href="https://hartensteindominic.github.io/The-Void-Miner/" class="node-card">
+        <div class="title">[ NODE_02: VOID_MINER ]</div>
+        <div class="desc">LOFI_BEATS_MINER. Optimized for long-term idling & music.</div>
+    </a>
+
+    <a href="https://hartensteindominic.github.io/Cyber-Crunch/" class="node-card">
+        <div class="title">[ NODE_03: CYBER_CRUNCH ]</div>
+        <div class="desc">ARCADE_LEADERBOARD. High-engagement Turbo Snake game.</div>
+    </a>
+
+    <div class="ad-box">
+        <iframe data-aa='2426201' src='https://acceptable.a-ads.com/2426201/?size=Adaptive' style='border:0; width:300px; height:50px;'></iframe>
+    </div>
+</div>
 
 <script>
     async function updateNews() {
         try {
-            // Fetch the top score from your Node 03 Leaderboard
             const res = await fetch("https://www.dreamlo.com/lb/679e95f18f407b1404618721/json");
             const data = await res.json();
-            const topEntry = data.dreamlo.leaderboard.entry[0];
-            
-            const ticker = document.getElementById('news-ticker');
-            ticker.innerText = `🚨 BREAKING: ${topEntry.name} IS CRUSHING NODE_03 WITH A SCORE OF ${topEntry.score} | 📡 ACTIVE_NODES: ${120 + Math.floor(Math.random()*20)} | 🚀 NEXT ROCKET LAUNCH IN 4m 20s | 🎧 VOID_MINER LOFI BEATS NOW TRENDING`;
+            const top = data.dreamlo.leaderboard.entry[0] || {name: "NONE", score: 0};
+            document.getElementById('news-ticker').innerText = 
+                `🚨 TOP_HARVESTER: ${top.name} [SCORE: ${top.score}] | 📡 NODES_ONLINE: ${125 + Math.floor(Math.random()*15)} | 🚀 NEXT_UPLINK: STABLE`;
         } catch(e) {
-            document.getElementById('news-ticker').innerText = "📡 ESTABLISHING SECURE UPLINK TO ALL NODES... STANDBY...";
+            document.getElementById('news-ticker').innerText = "📡 SYNCING WITH GLOBAL LEADERBOARD... ACTIVE";
         }
     }
-    setInterval(updateNews, 30000); 
-    updateNews();
+    setInterval(updateNews, 20000); updateNews();
 </script>
+
+</body>
+</html>
