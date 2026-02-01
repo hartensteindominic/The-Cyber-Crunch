@@ -1,104 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NODE_03: CYBER_CRUNCH</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NETWORK_GATEWAY</title>
     <style>
-        :root { --neon: #39ff14; --bg: #000; }
-        body { background: var(--bg); color: var(--neon); font-family: monospace; text-align: center; margin: 0; overflow-x: hidden; transition: background 1s; }
-        body.void-mode { --neon: #bc13fe; --bg: #05000a; }
-        canvas { border: 2px solid var(--neon); background: #000; display: block; margin: 10px auto; box-shadow: 0 0 15px var(--neon); width: 90vw; height: 90vw; max-width: 400px; max-height: 400px; }
-        .stats { font-size: 1.2rem; margin: 10px; }
-        .controls { display: grid; grid-template-columns: repeat(3, 75px); gap: 10px; justify-content: center; margin: 15px auto; }
-        .btn { width: 75px; height: 65px; background: #111; border: 2px solid var(--neon); color: var(--neon); font-size: 1.5rem; display: flex; align-items: center; justify-content: center; border-radius: 10px; touch-action: manipulation; }
-        .btn:active { background: var(--neon); color: #000; }
-        .up { grid-column: 2; } .left { grid-column: 1; grid-row: 2; } .down { grid-column: 2; grid-row: 2; } .right { grid-column: 3; grid-row: 2; }
+        body { background: #000; color: #00ffad; font-family: monospace; text-align: center; margin: 0; padding: 20px; }
+        .hub-container { border: 2px solid #00ffad; padding: 15px; border-radius: 15px; box-shadow: 0 0 20px rgba(0,255,173,0.3); max-width: 400px; margin: auto; }
+        .node-btn { 
+            display: block; border: 2px solid #00ffad; margin: 15px auto; padding: 20px; 
+            color: #00ffad; text-decoration: none; border-radius: 10px; font-weight: bold;
+            background: rgba(0, 255, 173, 0.05); transition: 0.3s;
+        }
+        .node-btn:active { background: #00ffad; color: #000; }
+        .ad-box { margin: 20px 0; min-height: 50px; }
+        .status { font-size: 0.7rem; color: #ff4500; margin-top: 10px; }
     </style>
 </head>
-<body id="gameBody">
+<body>
 
-    <div class="stats">SCORE: <span id="currentScore">0</span> | ETH: <span id="ethPrice">...</span></div>
-
-    <iframe data-aa='2426199' src='https://acceptable.a-ads.com/2426199/?size=Adaptive' style='border:0; width:300px; height:50px;'></iframe>
-
-    <canvas id="snakeGame" width="400" height="400"></canvas>
-
-    <div class="controls">
-        <div class="btn up" ontouchstart="setDir('UP')">▲</div>
-        <div class="btn left" ontouchstart="setDir('LEFT')">◀</div>
-        <div class="btn down" ontouchstart="setDir('DOWN')">▼</div>
-        <div class="btn right" ontouchstart="setDir('RIGHT')">▶</div>
+<div class="hub-container">
+    <h2 style="letter-spacing: 2px;">NETWORK_GATEWAY_v2.0</h2>
+    
+    <div class="ad-box">
+        <iframe data-aa='2426199' src='https://acceptable.a-ads.com/2426199/?size=Adaptive' style='border:0; width:300px; height:50px;'></iframe>
     </div>
 
-    <iframe data-aa='2426201' src='https://acceptable.a-ads.com/2426201/?size=Adaptive' style='border:0; width:300px; height:50px;'></iframe>
+    <a href="/Ad-Rev/" class="node-btn">[ NODE_01: MISSION ]</a>
+    <a href="/The-Void-Miner/" class="node-btn">[ NODE_02: VOID ]</a>
+    <a href="/Cyber-Crunch/" class="node-btn">[ NODE_03: ARCADE ]</a>
 
-    <script>
-        const canvas = document.getElementById("snakeGame");
-        const ctx = canvas.getContext("2d");
-        const box = 20;
-        let score = 0;
-        let snake = [{x: 9 * box, y: 10 * box}];
-        let food = {x: Math.floor(Math.random()*19)*box, y: Math.floor(Math.random()*19)*box};
-        let d;
-        let gameSpeed = 150;
+    <div class="ad-box">
+        <iframe data-aa='2426201' src='https://acceptable.a-ads.com/2426201/?size=Adaptive' style='border:0; width:300px; height:50px;'></iframe>
+    </div>
+    
+    <div class="status">SYSTEM_CHECK: ENSURE ALL REPOS ARE "PUBLIC"</div>
+</div>
 
-        function setDir(dir) {
-            if (navigator.vibrate) navigator.vibrate(10);
-            if(dir == "LEFT" && d != "RIGHT") d = "LEFT";
-            if(dir == "UP" && d != "DOWN") d = "UP";
-            if(dir == "RIGHT" && d != "LEFT") d = "RIGHT";
-            if(dir == "DOWN" && d != "UP") d = "DOWN";
-        }
-
-        function draw() {
-            ctx.fillStyle = "black";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            for(let i=0; i<snake.length; i++) {
-                ctx.fillStyle = (i == 0) ? "#39ff14" : "#1a5e0d";
-                if(document.body.classList.contains('void-mode')) ctx.fillStyle = (i == 0) ? "#bc13fe" : "#4b0082";
-                ctx.fillRect(snake[i].x, snake[i].y, box-1, box-1);
-            }
-            ctx.fillStyle = "red";
-            ctx.fillRect(food.x, food.y, box-1, box-1);
-
-            let snakeX = snake[0].x;
-            let snakeY = snake[0].y;
-            if(d == "LEFT") snakeX -= box;
-            if(d == "UP") snakeY -= box;
-            if(d == "RIGHT") snakeX += box;
-            if(d == "DOWN") snakeY += box;
-
-            if(snakeX == food.x && snakeY == food.y) {
-                score++;
-                if (navigator.vibrate) navigator.vibrate(30);
-                document.getElementById("currentScore").innerText = score;
-                food = {x: Math.floor(Math.random()*19)*box, y: Math.floor(Math.random()*19)*box};
-                
-                if(score === 50) document.body.classList.add('void-mode');
-                
-                if(score % 5 === 0 && gameSpeed > 50) {
-                    gameSpeed -= 10;
-                    clearInterval(game);
-                    game = setInterval(draw, gameSpeed);
-                }
-            } else { snake.pop(); }
-
-            let newHead = {x: snakeX, y: snakeY};
-            if(snakeX < 0 || snakeX >= canvas.width || snakeY < 0 || snakeY >= canvas.height || collision(newHead, snake)) {
-                clearInterval(game);
-                const name = prompt("CRASHED! Score: " + score + "\nName for Leaderboard:");
-                if(name) fetch("https://www.dreamlo.com/lb/679e95f18f407b1404618721/add/" + name.replace(/ /g,"_") + "/" + score);
-                location.reload(); // REFRESH FOR ADS
-            }
-            snake.unshift(newHead);
-        }
-
-        function collision(head, array) {
-            for(let i=0; i<array.length; i++) { if(head.x == array[i].x && head.y == array[i].y) return true; }
-            return false;
-        }
-
-        let game = setInterval(draw, gameSpeed);
-    </script>
 </body>
 </html>
