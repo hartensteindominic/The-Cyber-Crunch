@@ -2,102 +2,127 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CYBER_CRUNCH_v1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CYBER_CRUNCH_LEADERBOARD</title>
     <style>
         :root { --neon: #39ff14; --bg: #000; }
-        body { background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; margin: 0; text-align: center; }
-        .game-container { border: 2px solid var(--neon); display: inline-block; background: #050505; position: relative; margin: 20px 0; }
-        canvas { display: block; background: #000; }
-        .ad-row { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 15px 0; }
-        .node-nav { position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.9); padding: 10px; border: 1px solid var(--neon); font-size: 0.7rem; }
-        .node-nav a { color: var(--neon); text-decoration: none; font-weight: bold; }
-        .score { font-size: 1.5rem; margin: 10px 0; }
+        body { background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; margin: 0; text-align: center; overflow-x: hidden; }
+        .ticker { background: #111; padding: 8px; border-bottom: 1px solid var(--neon); font-size: 0.8rem; }
+        .game-container { border: 2px solid var(--neon); display: inline-block; background: #050505; width: 300px; height: 300px; box-shadow: 0 0 15px var(--neon); }
+        canvas { display: block; width: 300px; height: 300px; }
+        
+        /* Leaderboard Style */
+        .leaderboard { background: #111; border: 1px solid var(--neon); margin: 10px auto; width: 300px; padding: 5px; font-size: 0.7rem; }
+        .lb-entry { display: flex; justify-content: space-between; padding: 2px 5px; border-bottom: 1px dotted #222; }
+
+        .controls { display: grid; grid-template-columns: repeat(3, 70px); gap: 10px; justify-content: center; margin: 10px 0; }
+        .btn { width: 70px; height: 50px; background: #222; border: 1px solid var(--neon); color: var(--neon); font-size: 1.2rem; display: flex; align-items: center; justify-content: center; border-radius: 8px; }
+        .btn:active { background: var(--neon); color: black; }
+        .ad-row { display: flex; justify-content: center; margin: 5px 0; height: 50px; }
     </style>
 </head>
 <body>
 
-<h1>NODE_03: CYBER_CRUNCH</h1>
-<div class="score">DATA_HARVESTED: <span id="scoreVal">0</span></div>
+<div class="ticker">ETH: <span id="eth-price">...</span> | TOP_HARVESTER: <span id="top-name">NONE</span></div>
 
 <div class="ad-row">
     <iframe id="ad1" data-aa='2426199' src='https://acceptable.a-ads.com/2426199/?size=Adaptive' style='border:0; width:300px; height:50px;'></iframe>
-    <iframe id="ad2" data-aa='2426200' src='https://acceptable.a-ads.com/2426200/?size=Adaptive' style='border:0; width:300px; height:50px;'></iframe>
 </div>
 
-<div class="game-container">
-    <canvas id="snakeGame" width="400" height="400"></canvas>
+<div class="leaderboard" id="leaderboard">
+    <div style="font-weight:bold; border-bottom: 1px solid var(--neon); margin-bottom: 5px;">GLOBAL_LEADERBOARD (TOP 5)</div>
+    <div id="scores-list">Loading data...</div>
+</div>
+
+<div class="game-container"><canvas id="snakeGame" width="300" height="300"></canvas></div>
+
+<div class="controls">
+    <div style="grid-column: 2" class="btn" onclick="setDir('UP')">▲</div>
+    <div class="btn" onclick="setDir('LEFT')">◀</div>
+    <div class="btn" onclick="setDir('DOWN')">▼</div>
+    <div class="btn" onclick="setDir('RIGHT')">▶</div>
 </div>
 
 <div class="ad-row">
-    <iframe id="ad3" data-aa='2426201' src='https://acceptable.a-ads.com/2426201/?size=Adaptive' style='border:0; width:300px; height:50px;'></iframe>
-    <iframe id="ad4" data-aa='2426202' src='https://acceptable.a-ads.com/2426202/?size=Adaptive' style='border:0; width:300px; height:50px;'></iframe>
-</div>
-
-<div class="node-nav">
-    <a href="https://hartensteindominic.github.io/">[ NODE_01 ]</a> | 
-    <a href="https://hartensteindominic.github.io/The-Void-Miner/">[ NODE_02 ]</a>
+    <iframe id="ad2" data-aa='2426201' src='https://acceptable.a-ads.com/2426201/?size=Adaptive' style='border:0; width:300px; height:50px;'></iframe>
 </div>
 
 <script>
+    // 1. Leaderboard Logic (Dreamlo API)
+    const LB_URL = "https://www.dreamlo.com/lb/679e95f18f407b1404618721"; // Temporary public key
+    
+    async function updateLeaderboard() {
+        try {
+            const res = await fetch(LB_URL + "/json");
+            const data = await res.json();
+            const list = data.dreamlo.leaderboard.entry;
+            const top5 = Array.isArray(list) ? list.slice(0, 5) : [list];
+            let html = "";
+            top5.forEach((e, i) => {
+                if(e) html += `<div class="lb-entry"><span>${i+1}. ${e.name}</span><span>${e.score}</span></div>`;
+                if(i === 0 && e) document.getElementById('top-name').innerText = e.name;
+            });
+            document.getElementById('scores-list').innerHTML = html;
+        } catch(e) { document.getElementById('scores-list').innerText = "Establishing link..."; }
+    }
+    setInterval(updateLeaderboard, 30000); updateLeaderboard();
+
+    // 2. Snake Game Logic
     const canvas = document.getElementById("snakeGame");
     const ctx = canvas.getContext("2d");
-    const box = 20;
+    const box = 15;
     let score = 0;
     let snake = [{ x: 9 * box, y: 10 * box }];
-    let food = { x: Math.floor(Math.random()*19+1)*box, y: Math.floor(Math.random()*19+1)*box };
+    let food = { x: Math.floor(Math.random()*19)*box, y: Math.floor(Math.random()*19)*box };
     let d;
 
-    document.addEventListener("keydown", direction);
-    function direction(event) {
-        if(event.keyCode == 37 && d != "RIGHT") d = "LEFT";
-        else if(event.keyCode == 38 && d != "DOWN") d = "UP";
-        else if(event.keyCode == 39 && d != "LEFT") d = "RIGHT";
-        else if(event.keyCode == 40 && d != "UP") d = "DOWN";
+    function setDir(dir) {
+        if(dir == "LEFT" && d != "RIGHT") d = "LEFT";
+        if(dir == "UP" && d != "DOWN") d = "UP";
+        if(dir == "RIGHT" && d != "LEFT") d = "RIGHT";
+        if(dir == "DOWN" && d != "UP") d = "DOWN";
     }
 
     function draw() {
-        ctx.fillStyle = "black";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "black"; ctx.fillRect(0, 0, canvas.width, canvas.height);
         for(let i=0; i<snake.length; i++) {
             ctx.fillStyle = (i == 0) ? "#39ff14" : "#1a5e0d";
-            ctx.fillRect(snake[i].x, snake[i].y, box, box);
+            ctx.fillRect(snake[i].x, snake[i].y, box-1, box-1);
         }
-        ctx.fillStyle = "red";
-        ctx.fillRect(food.x, food.y, box, box);
-        let snakeX = snake[0].x;
-        let snakeY = snake[0].y;
-        if(d == "LEFT") snakeX -= box;
-        if(d == "UP") snakeY -= box;
-        if(d == "RIGHT") snakeX += box;
-        if(d == "DOWN") snakeY += box;
+        ctx.fillStyle = "red"; ctx.fillRect(food.x, food.y, box-1, box-1);
+        let snakeX = snake[0].x; let snakeY = snake[0].y;
+        if(d == "LEFT") snakeX -= box; if(d == "UP") snakeY -= box;
+        if(d == "RIGHT") snakeX += box; if(d == "DOWN") snakeY += box;
         if(snakeX == food.x && snakeY == food.y) {
-            score++;
-            document.getElementById("scoreVal").innerText = score;
-            food = { x: Math.floor(Math.random()*19+1)*box, y: Math.floor(Math.random()*19+1)*box };
+            score++; food = { x: Math.floor(Math.random()*19)*box, y: Math.floor(Math.random()*19)*box };
         } else { snake.pop(); }
         let newHead = { x: snakeX, y: snakeY };
         if(snakeX < 0 || snakeX >= canvas.width || snakeY < 0 || snakeY >= canvas.height || collision(newHead, snake)) {
-            clearInterval(game);
-            alert("NODE CRASHED. REBOOTING...");
+            const name = prompt("NODE CRASHED! Score: " + score + "\nEnter Name for Leaderboard:");
+            if(name) fetch(LB_URL + "/add/" + name.replace(/ /g,"_") + "/" + score);
             location.reload();
         }
         snake.unshift(newHead);
     }
-
     function collision(head, array) {
         for(let i=0; i<array.length; i++) { if(head.x == array[i].x && head.y == array[i].y) return true; }
         return false;
     }
+    let game = setInterval(draw, 150);
 
-    let game = setInterval(draw, 100);
-
-    // AUTO REFRESH ADS EVERY 60s
+    // 3. ETH Price & Ads
+    async function getPrice() {
+        try {
+            const res = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT');
+            const data = await res.json();
+            document.getElementById('eth-price').innerText = '$' + parseFloat(data.price).toFixed(0);
+        } catch(e) {}
+    }
+    setInterval(getPrice, 20000); getPrice();
     setInterval(() => {
-        ['ad1', 'ad2', 'ad3', 'ad4'].forEach(id => {
-            document.getElementById(id).src = document.getElementById(id).src;
-        });
-    }, 60000);
+        document.getElementById('ad1').src = document.getElementById('ad1').src;
+        document.getElementById('ad2').src = document.getElementById('ad2').src;
+    }, 45000);
 </script>
 </body>
 </html>
