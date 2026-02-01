@@ -3,34 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NODE_03: CYBER_CRUNCH_ULTIMATE</title>
+    <title>CYBER_CORE_HUB</title>
     <style>
-        :root { --neon: #39ff14; --bg: #000; --shadow: rgba(57, 255, 20, 0.5); }
-        body { background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; text-align: center; margin: 0; overflow: hidden; transition: 0.5s; }
-        
-        /* THE VOID THEME - Activates at Score 50 */
-        body.void-mode { --neon: #bc13fe; --shadow: rgba(188, 19, 254, 0.5); }
+        :root { --neon: #39ff14; --bg: #000; }
+        body { background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; text-align: center; margin: 0; overflow-x: hidden; transition: 0.8s; }
+        body.void-mode { --neon: #bc13fe; }
 
-        canvas { border: 3px solid var(--neon); background: #000; box-shadow: 0 0 20px var(--shadow); margin: 10px auto; display: block; width: 90vw; height: 90vw; max-width: 380px; max-height: 380px; }
-        
-        .hud { font-size: 1.2rem; margin: 10px 0; font-weight: bold; }
-        .ad-slot { height: 55px; margin: 5px 0; display: flex; justify-content: center; align-items: center; background: #111; }
+        /* THE ARCADE CANVAS */
+        canvas { border: 2px solid var(--neon); background: #000; box-shadow: 0 0 15px var(--neon); margin: 10px auto; display: block; width: 85vw; height: 85vw; max-width: 350px; }
 
-        /* MOBILE CONTROLS */
-        .controls { display: grid; grid-template-columns: repeat(3, 70px); gap: 10px; justify-content: center; margin-top: 10px; }
-        .btn { width: 70px; height: 60px; background: #111; border: 2px solid var(--neon); color: var(--neon); font-size: 1.5rem; display: flex; align-items: center; justify-content: center; border-radius: 10px; touch-action: manipulation; }
+        /* SUB-NAVIGATION (The Three Nodes) */
+        .node-nav { display: flex; justify-content: center; gap: 10px; margin: 15px 0; }
+        .nav-btn { border: 1px solid var(--neon); padding: 8px; font-size: 0.7rem; color: var(--neon); text-decoration: none; border-radius: 5px; background: rgba(0,255,0,0.05); }
+
+        /* REVENUE SLOTS */
+        .ad-slot { height: 50px; margin: 10px 0; display: flex; justify-content: center; align-items: center; }
+
+        /* GAME CONTROLS */
+        .controls { display: grid; grid-template-columns: repeat(3, 65px); gap: 8px; justify-content: center; margin-bottom: 20px; }
+        .btn { width: 65px; height: 55px; background: #111; border: 2px solid var(--neon); color: var(--neon); font-size: 1.2rem; display: flex; align-items: center; justify-content: center; border-radius: 8px; touch-action: manipulation; }
         .btn:active { background: var(--neon); color: #000; }
         .up { grid-column: 2; } .left { grid-column: 1; grid-row: 2; } .down { grid-column: 2; grid-row: 2; } .right { grid-column: 3; grid-row: 2; }
     </style>
 </head>
-<body id="gameBody">
+<body>
 
     <div class="ad-slot">
         <iframe data-aa='2426199' src='https://acceptable.a-ads.com/2426199/?size=Adaptive' style='border:0; width:300px; height:50px;'></iframe>
     </div>
 
-    <div class="hud">SCORE: <span id="scoreVal">000</span> | MODE: <span id="mode">STABLE</span></div>
+    <div class="node-nav">
+        <a href="https://hartensteindominic.github.io/Ad-Revenue/" class="nav-btn">01_MISSION</a>
+        <a href="https://hartensteindominic.github.io/The-Void-Miner/" class="nav-btn">02_VOID</a>
+        <a href="https://hartensteindominic.github.io/Cyber-Crunch/" class="nav-btn" style="background:var(--neon); color:#000;">03_ARCADE</a>
+    </div>
 
+    <div style="font-size: 0.9rem;">SCORE: <span id="scoreVal">0</span> | SPEED: <span id="speedVal">1.0x</span></div>
+    
     <canvas id="cyberGame" width="400" height="400"></canvas>
 
     <div class="controls">
@@ -59,47 +68,35 @@
             if(dir == "UP" && d != "DOWN") d = "UP";
             if(dir == "RIGHT" && d != "LEFT") d = "RIGHT";
             if(dir == "DOWN" && d != "UP") d = "DOWN";
-            if (navigator.vibrate) navigator.vibrate(15);
         }
 
         function draw() {
             ctx.fillStyle = "black";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            for(let i=0; i<snake.length; i++) {
+            for(let i=0; i<snake.length; i++){
                 ctx.fillStyle = (i == 0) ? "white" : (document.body.classList.contains('void-mode') ? "#bc13fe" : "#39ff14");
                 ctx.fillRect(snake[i].x, snake[i].y, box-2, box-2);
             }
-
-            ctx.fillStyle = "#ff003c"; // Glitch Food
+            ctx.fillStyle = "#ff003c";
             ctx.fillRect(food.x, food.y, box-2, box-2);
 
-            let sX = snake[0].x;
-            let sY = snake[0].y;
-
-            if(d == "LEFT") sX -= box;
-            if(d == "UP") sY -= box;
-            if(d == "RIGHT") sX += box;
-            if(d == "DOWN") sY += box;
+            let sX = snake[0].x; let sY = snake[0].y;
+            if(d == "LEFT") sX -= box; if(d == "UP") sY -= box;
+            if(d == "RIGHT") sX += box; if(d == "DOWN") sY += box;
 
             if(sX == food.x && sY == food.y) {
                 score++;
                 document.getElementById("scoreVal").innerText = score;
                 food = {x: Math.floor(Math.random()*19)*box, y: Math.floor(Math.random()*19)*box};
-                
-                // TURBO MODE & VOID THEME
-                if(score == 10) { speed = 100; document.getElementById("mode").innerText = "TURBO"; restart(); }
-                if(score == 50) { speed = 70; document.body.classList.add('void-mode'); document.getElementById("mode").innerText = "VOID"; restart(); }
+                if(score == 10) { speed = 100; document.getElementById("speedVal").innerText = "1.5x"; restart(); }
+                if(score == 30) { speed = 70; document.body.classList.add('void-mode'); document.getElementById("speedVal").innerText = "2.0x"; restart(); }
             } else { snake.pop(); }
 
-            let newHead = {x: sX, y: sY};
-
-            if(sX < 0 || sX >= 400 || sY < 0 || sY >= 400 || collision(newHead, snake)) {
-                clearInterval(game);
-                alert("CRITICAL_FAILURE: REBOOTING SYSTEM");
-                location.reload(); // FORCES AD REFRESH
+            let head = {x: sX, y: sY};
+            if(sX < 0 || sX >= 400 || sY < 0 || sY >= 400 || collision(head, snake)) {
+                location.reload(); // REFRESH FOR ADS
             }
-            snake.unshift(newHead);
+            snake.unshift(head);
         }
 
         function collision(head, array) {
