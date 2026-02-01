@@ -2,140 +2,52 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CYBER_CRUNCH_CORE_v6.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYSTEM_GATEWAY_v5.0</title>
     <style>
-        :root { --neon: #39ff14; --bg: #000; --accent: #ffffff; }
-        body { background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; text-align: center; margin: 0; overflow-x: hidden; transition: 0.8s; }
+        :root { --neon: #39ff14; --bg: #000; }
+        body { background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; text-align: center; margin: 0; padding: 20px; }
         
-        /* VOID THEME OVERRIDE */
-        body.void-mode { --neon: #bc13fe; --accent: #00d4ff; }
-
-        /* HEADER NAVIGATION */
-        .system-nav { 
-            display: flex; flex-direction: column; background: #111; 
-            border-bottom: 2px solid var(--neon); box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        /* HIGH-SPEED CONTAINER */
+        .gateway-frame { 
+            border: 3px solid var(--neon); padding: 25px; border-radius: 20px; 
+            box-shadow: 0 0 25px rgba(57, 255, 20, 0.3); max-width: 450px; margin: auto; 
+            background: rgba(57, 255, 20, 0.02);
         }
-        .hub-link { 
-            padding: 15px; color: var(--neon); text-decoration: none; 
-            font-weight: bold; font-size: 1.1rem; letter-spacing: 2px;
+
+        /* SYNCED NAVIGATION BUTTONS */
+        .node-btn { 
+            display: block; border: 2px solid var(--neon); margin: 15px auto; padding: 22px; 
+            color: var(--neon); text-decoration: none; border-radius: 12px; font-weight: bold;
+            font-size: 1.1rem; background: rgba(57, 255, 20, 0.05); transition: 0.2s;
+            letter-spacing: 2px;
         }
-        .node-links { display: flex; justify-content: space-around; padding: 10px; background: #050505; }
-        .nav-item { color: var(--neon); text-decoration: none; font-size: 0.7rem; border: 1px solid var(--neon); padding: 5px 10px; border-radius: 4px; }
-        .nav-item.active { background: var(--neon); color: #000; }
+        .node-btn:active { background: var(--neon); color: #000; box-shadow: 0 0 20px var(--neon); }
 
-        /* REVENUE UNITS */
-        .ad-slot { min-height: 55px; margin: 10px 0; display: flex; justify-content: center; align-items: center; }
-
-        /* ARCADE CORE */
-        canvas { border: 3px solid var(--neon); background: #000; box-shadow: 0 0 20px var(--neon); margin: 5px auto; display: block; width: 90vw; height: 90vw; max-width: 380px; }
-        
-        .stats { font-size: 1rem; margin: 10px 0; display: flex; justify-content: space-around; font-weight: bold; }
-
-        /* TOUCH CONTROLS */
-        .controls { display: grid; grid-template-columns: repeat(3, 75px); gap: 10px; justify-content: center; margin: 15px 0 30px 0; }
-        .btn { width: 75px; height: 65px; background: #111; border: 2px solid var(--neon); color: var(--neon); font-size: 1.8rem; display: flex; align-items: center; justify-content: center; border-radius: 12px; touch-action: manipulation; }
-        .btn:active { background: var(--neon); color: #000; }
-        .up { grid-column: 2; } .left { grid-column: 1; grid-row: 2; } .down { grid-column: 2; grid-row: 2; } .right { grid-column: 3; grid-row: 2; }
+        .ad-slot { min-height: 60px; margin: 25px 0; background: #0a0a0a; border-radius: 8px; display: flex; justify-content: center; align-items: center; }
+        .status-line { font-size: 0.7rem; opacity: 0.6; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-<div class="system-nav">
-    <a href="https://hartensteindominic.github.io/" class="hub-link">◄ RETURN_TO_GATEWAY</a>
-    <div class="node-links">
-        <a href="https://hartensteindominic.github.io/Ad-Revenue/" class="nav-item">01_MISSION</a>
-        <a href="https://hartensteindominic.github.io/The-Void-Miner/" class="nav-item">02_VOID</a>
-        <a href="https://hartensteindominic.github.io/Cyber-Crunch/" class="nav-item active">03_CYBER</a>
+<div class="gateway-frame">
+    <h1 style="margin-top:0; text-shadow: 0 0 10px var(--neon);">SYSTEM_GATEWAY</h1>
+    <p class="status-line">UPLINK_STATUS: <span style="color:#fff;">ONLINE</span></p>
+    
+    <div class="ad-slot">
+        <iframe data-aa='2426199' src='https://acceptable.a-ads.com/2426199/?size=Adaptive' style='border:0; width:300px; height:50px;'></iframe>
     </div>
+
+    <a href="https://hartensteindominic.github.io/Ad-Revenue/" class="node-btn">[ 01_MISSION_CONTROL ]</a>
+    <a href="https://hartensteindominic.github.io/The-Void-Miner/" class="node-btn">[ 02_VOID_MINER ]</a>
+    <a href="https://hartensteindominic.github.io/Cyber-Crunch/" class="node-btn">[ 03_CYBER_CRUNCH ]</a>
+
+    <div class="ad-slot">
+        <iframe data-aa='2426201' src='https://acceptable.a-ads.com/2426201/?size=Adaptive' style='border:0; width:300px; height:50px;'></iframe>
+    </div>
+    
+    <p class="status-line" style="font-size:0.6rem;">© 2026 HARTENSTEIN_DOMINIC_NETWORK</p>
 </div>
-
-<div class="ad-slot">
-    <iframe data-aa='2426199' src='https://acceptable.a-ads.com/2426199/?size=Adaptive' style='border:0; width:300px; height:50px;'></iframe>
-</div>
-
-<div class="stats">
-    <span>SCORE: <span id="scoreVal">0</span></span>
-    <span>LVL: <span id="lvl">STABLE</span></span>
-</div>
-
-<canvas id="cyberGame" width="400" height="400"></canvas>
-
-<div class="controls">
-    <div class="btn up" ontouchstart="setDir('UP')">▲</div>
-    <div class="btn left" ontouchstart="setDir('LEFT')">◀</div>
-    <div class="btn down" ontouchstart="setDir('DOWN')">▼</div>
-    <div class="btn right" ontouchstart="setDir('RIGHT')">▶</div>
-</div>
-
-<div class="ad-slot">
-    <iframe data-aa='2426201' src='https://acceptable.a-ads.com/2426201/?size=Adaptive' style='border:0; width:300px; height:50px;'></iframe>
-</div>
-
-<script>
-    const canvas = document.getElementById("cyberGame");
-    const ctx = canvas.getContext("2d");
-    const box = 20;
-    let score = 0;
-    let snake = [{x: 9 * box, y: 10 * box}];
-    let food = {x: Math.floor(Math.random()*19)*box, y: Math.floor(Math.random()*19)*box};
-    let d;
-    let speed = 140;
-
-    function setDir(dir) {
-        if(dir == "LEFT" && d != "RIGHT") d = "LEFT";
-        if(dir == "UP" && d != "DOWN") d = "UP";
-        if(dir == "RIGHT" && d != "LEFT") d = "RIGHT";
-        if(dir == "DOWN" && d != "UP") d = "DOWN";
-        if (navigator.vibrate) navigator.vibrate(15);
-    }
-
-    function draw() {
-        ctx.fillStyle = "black";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        for(let i=0; i<snake.length; i++){
-            ctx.fillStyle = (i == 0) ? "var(--accent)" : "var(--neon)";
-            ctx.fillRect(snake[i].x, snake[i].y, box-2, box-2);
-        }
-        
-        ctx.fillStyle = "#ff003c";
-        ctx.fillRect(food.x, food.y, box-2, box-2);
-
-        let sX = snake[0].x; let sY = snake[0].y;
-        if(d == "LEFT") sX -= box; if(d == "UP") sY -= box;
-        if(d == "RIGHT") sX += box; if(d == "DOWN") sY += box;
-
-        if(sX == food.x && sY == food.y) {
-            score++;
-            document.getElementById("scoreVal").innerText = score;
-            food = {x: Math.floor(Math.random()*19)*box, y: Math.floor(Math.random()*19)*box};
-            
-            // PROGRESSIVE DIFFICULTY
-            if(score == 10) { speed = 110; document.getElementById("lvl").innerText = "TURBO"; restart(); }
-            if(score == 25) { 
-                speed = 80; 
-                document.body.classList.add('void-mode'); 
-                document.getElementById("lvl").innerText = "VOID"; 
-                restart(); 
-            }
-        } else { snake.pop(); }
-
-        let head = {x: sX, y: sY};
-        if(sX < 0 || sX >= 400 || sY < 0 || sY >= 400 || collision(head, snake)) {
-            location.reload(); 
-        }
-        snake.unshift(head);
-    }
-
-    function collision(head, array) {
-        for(let i=0; i<array.length; i++) { if(head.x == array[i].x && head.y == array[i].y) return true; }
-        return false;
-    }
-
-    function restart() { clearInterval(game); game = setInterval(draw, speed); }
-    let game = setInterval(draw, speed);
-</script>
 
 </body>
 </html>
