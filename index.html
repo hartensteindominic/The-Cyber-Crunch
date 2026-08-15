@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HyperStream5D Spatial Environment Viewer</title>
+<title>HyperStream5D Spatial Environment & Video Viewer</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: #030712; color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
@@ -12,13 +12,19 @@
   .brand span { color: #a855f7; }
   #viewer { flex: 1; position: relative; width: 100%; height: 100%; }
   canvas { display: block; width: 100%; height: 100%; }
-  .controls-panel { position: absolute; top: 20px; left: 20px; background: rgba(11, 15, 25, 0.85); backdrop-filter: blur(10px); border: 1px solid #1f2937; padding: 15px; border-radius: 10px; width: 300px; display: flex; flex-direction: column; gap: 10px; font-size: 12px; z-index: 10; }
-  .file-drop { border: 2px dashed #334155; padding: 15px; border-radius: 8px; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); }
+  .controls-panel { position: absolute; top: 20px; left: 20px; background: rgba(11, 15, 25, 0.9); backdrop-filter: blur(10px); border: 1px solid #1f2937; padding: 15px; border-radius: 10px; width: 320px; display: flex; flex-direction: column; gap: 12px; font-size: 12px; z-index: 10; max-height: 90vh; overflow-y: auto; }
+  .section-title { font-weight: 700; text-transform: uppercase; color: #94a3b8; letter-spacing: .5px; margin-bottom: 2px; }
+  .file-drop { border: 2px dashed #334155; padding: 12px; border-radius: 8px; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); }
   .file-drop:hover { border-color: #a855f7; }
   input[type="file"] { display: none; }
-  .btn { background: #7c3aed; color: #fff; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; font-size: 12px; }
+  textarea { width: 100%; height: 70px; background: #030712; border: 1px solid #334155; color: #f3f4f6; border-radius: 6px; padding: 8px; font-family: monospace; font-size: 11px; resize: none; }
+  textarea:focus { outline: none; border-color: #a855f7; }
+  .btn { background: #7c3aed; color: #fff; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; font-size: 12px; transition: background 0.2s; }
   .btn:hover { background: #6d28d9; }
+  .btn-row { display: flex; gap: 6px; }
   .status { color: #94a3b8; font-size: 11px; }
+  .slider-group { display: flex; flex-direction: column; gap: 4px; }
+  input[type="range"] { accent-color: #a855f7; cursor: pointer; width: 100%; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -26,21 +32,45 @@
 <body>
 
 <header>
-  <div class="brand">SPATIAL VIEWER • <span>HYPERSTREAM 5D</span></div>
+  <div class="brand">SPATIAL 3D VIDEO VIEWER • <span>HYPERSTREAM 5D</span></div>
   <div class="status" id="status-text">Awaiting Spatial Payload</div>
 </header>
 
 <div id="viewer">
   <div class="controls-panel">
-    <div style="font-weight:700; text-transform:uppercase; color:#94a3b8; letter-spacing:.5px;">Environment Ingestion</div>
+    <div class="section-title">Environment Ingestion</div>
     <div class="file-drop" onclick="document.getElementById('file-input').click()">
-      <span>Drop HyperStream JSON Here<br><small style="color:#64748b">or click to browse</small></span>
-      <input type="file" id="file-input" accept=".json" onchange="loadPayload(event)">
+      <span>Drop HyperStream JSON Here<br><small style="color:#64748b">or click to browse file</small></span>
+      <input type="file" id="file-input" accept=".json" onchange="loadPayloadFile(event)">
     </div>
-    <div style="display:flex; flex-direction:column; gap:6px;">
-      <label style="color:#cbd5e1;">Meta-Dimension Slider</label>
-      <input type="range" min="0" max="100" value="0" id="meta-slider" oninput="adjustMeta(this.value)" style="accent-color:#a855f7; cursor:pointer;">
+    
+    <div style="display:flex; flex-direction:column; gap:4px;">
+      <label style="color:#cbd5e1;">Or Paste JSON Payload:</label>
+      <textarea id="json-input" placeholder="Paste JSON array here..."></textarea>
+      <button class="btn" onclick="loadPayloadString()">Ingest Pasted JSON</button>
     </div>
+
+    <hr style="border:0; border-top:1px solid #1f2937;">
+
+    <div class="section-title">3D Video Playback Controls</div>
+    <div class="btn-row">
+      <button class="btn" id="play-btn" onclick="togglePlayback()" style="background:#0ea5e9;">Play / Pause</button>
+      <button class="btn" onclick="resetPlayback()" style="background:#334155;">Reset</button>
+    </div>
+
+    <div class="slider-group">
+      <div style="display:flex; justify-content:space-between; color:#cbd5e1;">
+        <span>Timeline Frame</span>
+        <span id="frame-counter">0 / 0</span>
+      </div>
+      <input type="range" min="0" max="100" value="0" id="time-slider" oninput="seekFrame(this.value)">
+    </div>
+
+    <div class="slider-group">
+      <label style="color:#cbd5e1;">Meta-Dimension Blend</label>
+      <input type="range" min="0" max="100" value="0" id="meta-slider" oninput="adjustMeta(this.value)">
+    </div>
+
     <div class="status" id="node-stats">Nodes Loaded: 0</div>
   </div>
   <canvas id="canvas"></canvas>
@@ -49,6 +79,9 @@
 <script>
 let scene, camera, renderer, controls, spatialMesh;
 let rawFrames = [];
+let currentFrameIndex = 0;
+let isPlaying = false;
+let playbackInterval = null;
 
 init();
 
@@ -72,7 +105,6 @@ function init() {
   light.position.set(5, 5, 5);
   scene.add(light);
 
-  // Added 3D Axis Map Helper (Red: X, Green: Y, Blue: Z)
   const axesHelper = new THREE.AxesHelper(2);
   scene.add(axesHelper);
 
@@ -93,30 +125,54 @@ function onWindowResize() {
   renderer.setSize(container.clientWidth, container.clientHeight);
 }
 
-function loadPayload(event) {
+function processJSONData(json) {
+  rawFrames = json.HyperStream5D || json;
+  if (Array.isArray(rawFrames) && rawFrames.length > 0) {
+    currentFrameIndex = 0;
+    const timeSlider = document.getElementById('time-slider');
+    timeSlider.max = rawFrames.length - 1;
+    timeSlider.value = 0;
+    
+    buildEnvironment(0);
+    document.getElementById('status-text').innerText = 'Spatial 3D Video Online';
+  } else {
+    alert('Invalid format: Missing HyperStream5D array or valid root array.');
+  }
+}
+
+function loadPayloadFile(event) {
   const file = event.target.files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = function(e) {
     try {
       const json = JSON.parse(e.target.result);
-      rawFrames = json.HyperStream5D || json;
-      if (Array.isArray(rawFrames) && rawFrames.length > 0) {
-        buildEnvironment(0);
-        document.getElementById('status-text').innerText = 'Spatial Environment Online';
-      } else {
-        alert('Invalid format: Missing HyperStream5D array.');
-      }
+      processJSONData(json);
     } catch(err) {
-      alert('Error parsing JSON: ' + err.message);
+      alert('Error parsing JSON file: ' + err.message);
     }
   };
   reader.readAsText(file);
 }
 
-function buildEnvironment(frameIndex, metaBlend = 0) {
+function loadPayloadString() {
+  const text = document.getElementById('json-input').value.trim();
+  if (!text) {
+    alert('Please paste a JSON string first.');
+    return;
+  }
+  try {
+    const json = JSON.parse(text);
+    processJSONData(json);
+  } catch(err) {
+    alert('Error parsing pasted JSON: ' + err.message);
+  }
+}
+
+function buildEnvironment(frameIndex) {
   if (!rawFrames.length) return;
-  const frame = rawFrames[frameIndex % rawFrames.length];
+  const safeIndex = Math.floor(frameIndex) % rawFrames.length;
+  const frame = rawFrames[safeIndex];
   const vertices = frame.v || frame.vertices || [];
   const colors = frame.c || frame.colors || [];
 
@@ -142,13 +198,46 @@ function buildEnvironment(frameIndex, metaBlend = 0) {
 
   spatialMesh = new THREE.Points(geometry, material);
   scene.add(spatialMesh);
+  
   document.getElementById('node-stats').innerText = `Nodes Loaded: ${(vertices.length / 3).toLocaleString()}`;
+  document.getElementById('frame-counter').innerText = `${safeIndex + 1} / ${rawFrames.length}`;
+  document.getElementById('time-slider').value = safeIndex;
+}
+
+function seekFrame(val) {
+  currentFrameIndex = parseInt(val);
+  buildEnvironment(currentFrameIndex);
+}
+
+function togglePlayback() {
+  if (!rawFrames.length) return;
+  isPlaying = !isPlaying;
+  const playBtn = document.getElementById('play-btn');
+  
+  if (isPlaying) {
+    playBtn.style.background = '#e11d48';
+    playbackInterval = setInterval(() => {
+      currentFrameIndex = (currentFrameIndex + 1) % rawFrames.length;
+      buildEnvironment(currentFrameIndex);
+    }, 100); // 10fps playback sequence speed
+  } else {
+    playBtn.style.background = '#0ea5e9';
+    clearInterval(playbackInterval);
+  }
+}
+
+function resetPlayback() {
+  isPlaying = false;
+  clearInterval(playbackInterval);
+  document.getElementById('play-btn').style.background = '#0ea5e9';
+  currentFrameIndex = 0;
+  buildEnvironment(0);
 }
 
 function adjustMeta(val) {
-  const blend = val / 100;
+  // Reserved for additional meta-dimensional matrix weighting if supplied
   if (rawFrames.length > 0) {
-    buildEnvironment(0, blend);
+    buildEnvironment(currentFrameIndex);
   }
 }
 </script>
