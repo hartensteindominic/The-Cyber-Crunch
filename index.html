@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HyperStream NEXUS • Sub-Quantum Omniversal Holographic Engine v5.0</title>
+<title>HyperStream NEXUS • Sub-Quantum 4D Hyper-Spatial Engine v5.1</title>
 <style>
 :root{--bg:#000205;--panel:rgba(2,6,23,0.96);--border:#1e293b;--accent:#38bdf8;--accent2:#ec4899;--accent3:#8b5cf6;--accent4:#10b981;--text:#f8fafc;--muted:#94a3b8}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -53,66 +53,67 @@ select{background:#0f172a;color:#fff;border:1px solid #334155;border-radius:5px;
 </head>
 <body>
 <div id="sidebar">
-  <div class="brand">HYPERSTREAM NEXUS OMNI v5.0<br><span>SUB-QUANTUM 8D HOLOGRAPHIC MATRIX</span></div>
+  <div class="brand">HYPERSTREAM NEXUS 4D<br><span>TRUE FOURTH-DIMENSIONAL HYPERSPACE MATRIX</span></div>
 
   <div class="tabs">
-    <button class="tab on" id="t-cap" onclick="mode('cap')">📡 Omni 8D</button>
+    <button class="tab on" id="t-cap" onclick="mode('cap')">📡 4D Matrix</button>
     <button class="tab" id="t-media" onclick="mode('media')">🖼️ Interactive Media</button>
     <button class="tab" id="t-load" onclick="mode('load')">📂 Load</button>
   </div>
 
   <div class="card" id="p-cap">
-    <div class="title">Omniversal Sub-Quantum Scan</div>
-    <button class="btn-d" id="scanBtn" onclick="toggleScan()">ACTIVATE OMNI-DIMENSIONAL SCAN</button>
+    <div class="title">True 4D Hyperspace Scan</div>
+    <button class="btn-d" id="scanBtn" onclick="toggleScan()">ACTIVATE 4D HYPER-SCAN</button>
     <div style="display:flex;gap:6px">
       <button class="btn-s" style="flex:1" id="camBtn" onclick="switchCam()">📷 Sensor</button>
-      <button class="btn-s" style="flex:1" id="perfBtn" onclick="togglePerf()">⚡ Singularity Speed</button>
+      <button class="btn-s" style="flex:1" id="perfBtn" onclick="togglePerf()">⚡ HyperSpeed</button>
     </div>
     <div class="row"><span>Voxel Resolution Density</span><input type="range" id="step" min="1" max="3" value="1" oninput="stepSize=+this.value;$('stepV').textContent=this.value"><span id="stepV">1</span></div>
-    <div class="row"><span>Sub-Quantum Depth Field</span><input type="range" id="depth" min="10" max="200" value="100" oninput="depthMul=+this.value"></div>
+    <div class="row"><span>4D Hyper-Depth Field</span><input type="range" id="depth" min="10" max="200" value="100" oninput="depthMul=+this.value"></div>
     <div class="row"><span>Quantum Node Size</span><input type="range" id="psize" min="0.002" max="0.04" value="0.008" step="0.001" oninput="ptSize=+this.value;updSize()"></div>
+    <div class="row"><span>4D Hypercube Rotational Speed (W-Axis)</span><input type="range" id="wspd" min="0" max="5" value="1.0" step="0.1" oninput="wSpeed=+this.value"><span id="wspdVal">1.0</span></div>
     <div class="row"><span>Dimensional Strata Layers</span><input type="range" id="layers" min="2" max="64" value="32" oninput="layerN=+this.value;$('layV').textContent=this.value;buildChips()"><span id="layV">32</span></div>
     <div class="row"><span>Spatial Dispersion Factor</span><input type="range" id="spread" min="0.1" max="5.0" value="2.0" step="0.05" oninput="layerSp=+this.value"></div>
     <div style="font-size:9px;color:var(--muted)">Active Voxels <b id="nLive">0</b> · Temporal Vectors <b id="nFrm">0</b></div>
     <div style="display:flex;gap:6px">
-      <button class="btn-g" style="flex:1" onclick="expCompressedJSON()">⚡ Export Compressed Stream</button>
+      <button class="btn-g" style="flex:1" onclick="expCompressedJSON()">⚡ Export 4D Stream</button>
       <button class="btn-s" style="flex:1" onclick="copyCompressedJSON()">Copy Code</button>
     </div>
-    <textarea id="jsonOut" readonly placeholder="Base64 quantum coordinate payload..."></textarea>
+    <textarea id="jsonOut" readonly placeholder="Base64 4D coordinate payload..."></textarea>
   </div>
 
   <div class="card" id="p-media" style="display:none">
-    <div class="title">Interactive Image & Video Synthesizer</div>
+    <div class="title">Interactive 4D Image & Video Synthesizer</div>
     <div class="drop" id="mediaDrop" onclick="$('mediaFi').click()">Drop Interactive Image/Video or Click
       <input type="file" id="mediaFi" accept="image/*,video/*" onchange="mediaFileIn(event)">
     </div>
-    <div class="row"><span>Interactive Hologram Physics</span>
+    <div class="row"><span>4D Hyperspace Physics</span>
       <select id="interactiveMode" onchange="hologramPhysicsMode=this.value">
-        <option value="quantum">Quantum Wave Ripple</option>
-        <option value="magnetic">Magnetic Cursor Repulsion</option>
-        <option value="vortex">Dimensional Vortex Warp</option>
+        <option value="quantum">4D Hyper-Wave Ripple</option>
+        <option value="magnetic">Magnetic W-Axis Repulsion</option>
+        <option value="vortex">Hyperspatial Vortex Warp</option>
       </select>
     </div>
     <div class="row"><span>Touch/Mouse Dispersion</span><input type="range" id="touchForce" min="0" max="2" value="0.8" step="0.1" oninput="dispersionForce=+this.value"></div>
   </div>
 
   <div class="card" id="p-load" style="display:none">
-    <div class="title">Import & Decompress Payload</div>
+    <div class="title">Import & Decompress 4D Payload</div>
     <div class="drop" id="drop" onclick="$('fi').click()">Drop Matrix File or Paste Below
       <input type="file" id="fi" accept=".json,.hologram" onchange="fileIn(event)">
     </div>
-    <textarea id="jsonIn" placeholder='Paste compressed hologram string here...'></textarea>
+    <textarea id="jsonIn" placeholder='Paste compressed 4D hologram string here...'></textarea>
     <div style="display:flex;gap:6px;margin-top:4px">
       <button class="btn-p" style="flex:1" onclick="pasteInDecompress()">Decompress & Synthesize</button>
-      <button class="btn-s" style="flex:1" onclick="clearAll()">Purge Omniverse</button>
+      <button class="btn-s" style="flex:1" onclick="clearAll()">Purge Hyperspace</button>
     </div>
   </div>
 
   <div class="card">
-    <div class="title">Sub-Quantum FX & Audio Engine</div>
+    <div class="title">4D FX & Audio Engine</div>
     <div class="row"><span>Render Matrix Engine</span>
       <select id="rmode" onchange="rMode=this.value;if(frames.length)drawFrame(playIdx,metaV)">
-        <option value="points">Sub-Quantum Point Matrix</option>
+        <option value="points">4D Sub-Quantum Point Matrix</option>
         <option value="solid">Crystalline Hyper-Mesh</option>
         <option value="wire">Spatial Wireframe Lattice</option>
         <option value="quantumWave">Quantum Harmonic Wave Grid</option>
@@ -133,18 +134,18 @@ select{background:#0f172a;color:#fff;border:1px solid #334155;border-radius:5px;
   </div>
 
   <div class="card">
-    <div class="title">Export Holographic Media</div>
+    <div class="title">Export 4D Holographic Media</div>
     <button class="btn-p" style="background:#0d9488" onclick="expPNG()">📸 Snapshot PNG</button>
-    <button class="btn-p" style="background:#2563eb" id="webmBtn" onclick="expDimensionalVideo()">🎥 Record 8D Spatial Video</button>
+    <button class="btn-p" style="background:#2563eb" id="webmBtn" onclick="expDimensionalVideo()">🎥 Record 4D Spatial Video</button>
     <div class="prog"><div id="progFill"></div></div>
-    <div class="hint" id="expStatus">Sub-Quantum Pipeline Online.</div>
+    <div class="hint" id="expStatus">4D Hyperspace Pipeline Online.</div>
   </div>
 </div>
 
 <div id="viewer">
   <div class="stats">
-    <span id="status">Sub-Quantum Engine Online</span><br>
-    FPS <b id="fpsD">—</b> · Hologram Voxels <b id="nodesD">0</b>
+    <span id="status">4D Hyperspace Engine Online</span><br>
+    FPS <b id="fpsD">—</b> · 4D Voxels <b id="nodesD">0</b>
   </div>
   <video id="vid" autoplay playsinline muted></video>
   <canvas id="c3"></canvas>
@@ -163,7 +164,7 @@ let rMode = 'points', metaV = 0.50, playFPS = 60;
 let isPlay = false, frames = [], playIdx = 0, lastT = 0;
 let autoOrbit = true, doPulse = true, vis = [];
 let facing = 'user', stream = null, ready = false;
-let perf = false, lastVol = 0;
+let perf = false, lastVol = 0, wSpeed = 1.0;
 const VOL_MS = 16;
 let fc = 0, ft = 0, phase = 0;
 let exporting = false;
@@ -257,7 +258,7 @@ function initAudioReactivity() {
     analyser.fftSize = 256;
     source.connect(analyser);
     dataArray = new Uint8Array(analyser.frequencyBinCount);
-    $('status').textContent = 'Sub-Quantum Mic Sync Active';
+    $('status').textContent = '4D Hyperspace Mic Sync Active';
   }).catch(() => {
     $('status').textContent = 'Microphone permission denied';
   });
@@ -293,7 +294,7 @@ function initCam(face) {
   }).then(() => {
     ready = true;
     $('camBtn').textContent = face === 'environment' ? '📷 Back' : '📷 Front';
-    $('status').textContent = 'Sub-Quantum Sensor Online';
+    $('status').textContent = '4D Sensor Online';
   }).catch(() => {
     if (face !== 'user') initCam('user');
     else $('status').textContent = 'Sensor connection error';
@@ -312,14 +313,14 @@ function togglePerf() {
     $('layers').value = 16; $('layV').textContent = '16';
     $('psize').value = 0.012;
     $('perfBtn').style.background = '#10b981';
-    $('perfBtn').textContent = '⚡ Singularity ON';
+    $('perfBtn').textContent = '⚡ HyperSpeed ON';
   } else {
     stepSize = 1; layerN = 32; ptSize = 0.008;
     $('step').value = 1; $('stepV').textContent = '1';
     $('layers').value = 32; $('layV').textContent = '32';
     $('psize').value = 0.008;
     $('perfBtn').style.background = '';
-    $('perfBtn').textContent = '⚡ Singularity Speed';
+    $('perfBtn').textContent = '⚡ HyperSpeed';
   }
   buildChips();
   updSize();
@@ -406,12 +407,23 @@ function sample() {
       const ny = -((y / h) * 2 - 1);
       const dx = (x - cx) / maxR, dy = (y - cy) / maxR;
       let nz = ((0.299 * r + 0.587 * g + 0.114 * b) - 0.12) * (depthMul * 0.05) - (dx*dx + dy*dy) * 0.5;
+      let nw = Math.sin(nx * 3 + phase * wSpeed) * 0.5; // Fourth dimension W coordinate
 
       if (hologramPhysicsMode === 'vortex') {
         nz += Math.sin(nx * 5 + phase * 3) * 0.2;
+        nw += Math.cos(ny * 5 + phase * 3) * 0.2;
       }
 
-      pos.push(nx * sx, ny * sy, nz);
+      // 4D Rotation on XW plane & XW Perspective Projection to 3D
+      const theta = phase * wSpeed * 0.5;
+      const cosT = Math.cos(theta), sinT = Math.sin(theta);
+      const rotX = nx * cosT - nw * sinT;
+      const rotW = nx * sinT + nw * cosT;
+      
+      const wDist = 2.5;
+      const wFactor = 1 / (wDist - rotW);
+
+      pos.push(rotX * sx * wFactor, ny * sy * wFactor, nz * wFactor);
       col.push(r, g, b);
     }
   }
@@ -460,7 +472,6 @@ function buildLayers(basePos, baseCol) {
     for (let i = 0, j = 0; i < n; i++, j += 3) {
       let px = basePos[j], py = basePos[j + 1], pz = basePos[j + 2] + zOff;
       
-      // Apply interactive physics distortion relative to mouse
       if (hologramPhysicsMode === 'magnetic' && Math.hypot(px - mousePos.x*2, py - mousePos.y*2) < 0.8) {
         px += (px - mousePos.x*2) * dispersionForce * 0.3;
         py += (py - mousePos.y*2) * dispersionForce * 0.3;
@@ -499,14 +510,14 @@ function toggleScan() {
   const b = $('scanBtn');
   if (scanning) {
     rec = []; fIdx = 0; frames = []; isPlay = false;
-    b.textContent = 'STOP OMNI SCAN';
+    b.textContent = 'STOP 4D HYPER-SCAN';
     b.classList.add('on');
-    $('status').textContent = 'Recording 8D Sub-Quantum Matrix…';
+    $('status').textContent = 'Recording 4D Hyperspace Matrix…';
   } else {
-    b.textContent = 'ACTIVATE OMNI-DIMENSIONAL SCAN';
+    b.textContent = 'ACTIVATE 4D HYPER-SCAN';
     b.classList.remove('on');
-    $('status').textContent = 'Scan Complete';
-    $('expStatus').textContent = rec.length + ' temporal vectors locked';
+    $('status').textContent = '4D Scan Complete';
+    $('expStatus').textContent = rec.length + ' temporal 4D vectors locked';
   }
 }
 
@@ -535,16 +546,14 @@ function buildChips() {
   }
 }
 
-// Secret Code Condensation / Compression utility using LZ-string style custom compression
 function expCompressedJSON() {
   if (!rec.length && !frames.length) return;
   const payload = { n: rec.length ? rec : frames, l: layerN, s: layerSp };
-  // Compact serialization and lightweight base64 encoding for easy sharing
   const jsonStr = JSON.stringify(payload);
   const compressed = btoa(encodeURIComponent(jsonStr));
   $('jsonOut').value = compressed;
   navigator.clipboard.writeText(compressed).catch(() => {});
-  $('expStatus').textContent = 'Compressed secret code copied to clipboard!';
+  $('expStatus').textContent = '4D compressed code copied to clipboard!';
 }
 
 function copyCompressedJSON() {
@@ -558,7 +567,7 @@ function pasteInDecompress() {
     const jsonStr = decodeURIComponent(atob(raw));
     const data = JSON.parse(jsonStr);
     loadData({ HyperStreamNexus: data.n, layers: data.l, spread: data.s });
-    $('status').textContent = 'Payload successfully decompressed!';
+    $('status').textContent = '4D Payload successfully decompressed!';
   } catch {
     $('status').textContent = 'Decompression Error';
   }
@@ -584,7 +593,7 @@ function mediaFileIn(e) {
     video.src = url;
     video.play();
     ready = true;
-    $('status').textContent = 'Interactive video stream loaded';
+    $('status').textContent = 'Interactive 4D video stream loaded';
   }
 }
 
@@ -605,7 +614,7 @@ function sampleStaticImage() {
   frames = [{ vertices: Float32Array.from(pos), colors: Float32Array.from(col), layers: layerN, spread: layerSp }];
   drawFrame(0, 0.5);
   isPlay = false;
-  $('status').textContent = 'Interactive image hologram synthesized!';
+  $('status').textContent = 'Interactive 4D image hologram synthesized!';
 }
 
 function drawFrame(idx, meta) {
@@ -627,7 +636,7 @@ function loadData(data) {
 
 function clearAll() {
   isPlay = false; frames = []; playIdx = 0; clearLayers();
-  $('nodesD').textContent = '0'; $('status').textContent = 'Omniverse Purged';
+  $('nodesD').textContent = '0'; $('status').textContent = 'Hyperspace Purged';
 }
 
 function togglePlay() {
@@ -641,17 +650,17 @@ function expPNG() {
   if (composer) composer.render(); else ren.render(scene, cam);
   const a = document.createElement('a');
   a.href = $('c3').toDataURL('image/png');
-  a.download = 'hologram_' + Date.now() + '.png';
+  a.download = 'hologram_4d_' + Date.now() + '.png';
   a.click();
 }
 
 function expDimensionalVideo() {
   if (exporting) return;
   exporting = true;
-  $('expStatus').textContent = 'Rendering 8D spatial video...';
+  $('expStatus').textContent = 'Rendering 4D spatial video...';
   setTimeout(() => {
     exporting = false;
-    $('expStatus').textContent = 'Spatial video recorded successfully!';
+    $('expStatus').textContent = '4D spatial video recorded successfully!';
   }, 2000);
 }
 
@@ -671,15 +680,6 @@ function dropInit() {
   });
 }
 function fileIn(e) { if (e.target.files[0]) dropInit(); }
-function pasteInDecompress() {
-  try {
-    const raw = $('jsonIn').value.trim();
-    const data = JSON.parse(decodeURIComponent(atob(raw)));
-    loadData(data);
-  } catch {
-    $('status').textContent = 'Invalid Code String';
-  }
-}
 </script>
 </body>
 </html>
