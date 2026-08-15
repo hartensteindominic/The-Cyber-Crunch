@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HyperStream XD • Ultimate Maximum Density v4.2</title>
+<title>HyperStream XD • Fixed Color Engine v4.3</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#020617;color:#f8fafc;font-family:system-ui,-apple-system,sans-serif;height:100vh;display:flex;overflow:hidden}
@@ -53,7 +53,7 @@ select{background:#0f172a;color:#fff;border:1px solid #334155;border-radius:5px;
 </head>
 <body>
 <div id="sidebar">
-  <div class="brand">HYPERSTREAM XD • v4.2<br><span>UNLIMITED DENSITY ENGINE</span></div>
+  <div class="brand">HYPERSTREAM XD • v4.3<br><span>FIXED COLOR ENGINE</span></div>
 
   <div class="tabs">
     <button class="tab on" id="t-cap" onclick="mode('cap')">📡 Live 4D</button>
@@ -68,7 +68,7 @@ select{background:#0f172a;color:#fff;border:1px solid #334155;border-radius:5px;
       <button class="btn-s" style="flex:1" id="camBtn" onclick="switchCam()">📷 Sensor</button>
       <button class="btn-s" style="flex:1" id="perfBtn" onclick="togglePerf()">⚡ Max Resolution</button>
     </div>
-    <div class="row"><span>Voxel Step Size (1 = Full Res)</span><input type="range" id="step" min="1" max="4" value="1" oninput="stepSize=+this.value;$('stepV').textContent=this.value"><span id="stepV">1</span></div>
+    <div class="row"><span>Voxel Step Size</span><input type="range" id="step" min="1" max="4" value="1" oninput="stepSize=+this.value;$('stepV').textContent=this.value"><span id="stepV">1</span></div>
     <div class="row"><span>Hyper-Depth Field</span><input type="range" id="depth" min="10" max="150" value="90" oninput="depthMul=+this.value"></div>
     <div class="row"><span>Background Invert Mode</span><input type="checkbox" id="invBg" checked onchange="invertBackground = this.checked"></div>
     <div class="row"><span>Quantum Node Size</span><input type="range" id="psize" min="0.002" max="0.04" value="0.012" step="0.001" oninput="ptSize=+this.value"></div>
@@ -144,7 +144,7 @@ select{background:#0f172a;color:#fff;border:1px solid #334155;border-radius:5px;
 
 <div id="viewer">
   <div class="stats">
-    <span id="status">Quantum Engine v4.2 Online</span><br>
+    <span id="status">Quantum Engine v4.3 Online</span><br>
     FPS <b id="fpsD">—</b> · Voxels <b id="nodesD">0</b>
   </div>
   <video id="vid" autoplay playsinline muted></video>
@@ -221,7 +221,7 @@ const GlowPointShaderMaterial = {
       float d = length(gl_PointCoord - vec2(0.5));
       if (d > 0.5) discard;
       float glow = smoothstep(0.5, 0.0, d);
-      gl_FragColor = vec4(vColor * 1.4, glow * 0.95);
+      gl_FragColor = vec4(vColor * 1.3, glow * 0.95);
     }
   `
 };
@@ -467,7 +467,6 @@ function sample() {
   const step = Math.max(1, stepSize | 0);
   const thr = 0.005;
 
-  // Unbounded node accumulation to maximize mapped density
   for (let y = 0; y < h; y += step) {
     for (let x = 0; x < w; x += step) {
       const i = (y * w + x) * 4;
@@ -491,13 +490,8 @@ function sample() {
       }
 
       pos.push(nx * sx, ny * sy, nz);
-
-      const avg = (r + g + b) / 3;
-      col.push(
-        Math.min(1, avg + (r - avg) * 1.5 + 0.2),
-        Math.min(1, avg + (g - avg) * 1.4 + 0.1),
-        Math.min(1, avg + (b - avg) * 1.6 + 0.4)
-      );
+      // Direct pass-through of true color values from video pixels
+      col.push(r, g, b);
     }
   }
 
@@ -560,7 +554,7 @@ function buildLayers(basePos, baseCol) {
     const t = L / maxL;
     const s = (t - 0.5);
     const zOff = s * layerSp * 1.8;
-    const front = 1 - t;
+    const depthTint = 1.0 - (L / layerN) * 0.25;
 
     const pos = new Float32Array(n * 3);
     const col = new Float32Array(n * 3);
@@ -589,19 +583,14 @@ function buildLayers(basePos, baseCol) {
       vel[j + 1] = vel[j + 1] * 0.8 + (targetY - (prevPos[L] ? prevPos[L][j + 1] : targetY)) * 0.2;
       vel[j + 2] = vel[j + 2] * 0.8 + (targetZ - (prevPos[L] ? prevPos[L][j + 2] : targetZ)) * 0.2;
 
-      let px = targetX + vel[j];
-      let py = targetY + vel[j + 1];
-      let pz = targetZ + vel[j + 2];
-
-      pos[j] = px; pos[j + 1] = py; pos[j + 2] = pz;
+      pos[j]     = targetX + vel[j];
+      pos[j + 1] = targetY + vel[j + 1];
+      pos[j + 2] = targetZ + vel[j + 2];
       
-      const bcR = baseCol[j] !== undefined ? baseCol[j] : 0.5;
-      const bcG = baseCol[j + 1] !== undefined ? baseCol[j + 1] : 0.4;
-      const bcB = baseCol[j + 2] !== undefined ? baseCol[j + 2] : 0.9;
-
-      col[j]     = Math.min(1, bcR * (0.8 + front * 0.2));
-      col[j + 1] = Math.min(1, bcG * (0.8 + L * 0.02));
-      col[j + 2] = Math.min(1, bcB * (0.7 + (1 - front) * 0.3));
+      // Assign correct RGB color with depth shading
+      col[j]     = Math.min(1, (baseCol[j] !== undefined ? baseCol[j] : 0.8) * depthTint);
+      col[j + 1] = Math.min(1, (baseCol[j + 1] !== undefined ? baseCol[j + 1] : 0.8) * depthTint);
+      col[j + 2] = Math.min(1, (baseCol[j + 2] !== undefined ? baseCol[j + 2] : 0.8) * depthTint);
     }
 
     prevPos[L] = pos;
@@ -726,42 +715,16 @@ function drawFrame(idx, meta) {
   for (let i = 0; i < src.length; i += ts) {
     pos.push(src[i], src[i + 1] + (f.meta || 0.5) * meta * 0.4, src[i + 2]);
     const ci = (i / ts) * 3;
-    if (cols.length >= ci + 3) col.push(cols[ci], cols[ci + 1], cols[ci + 2]);
-    else col.push(0.5, 0.4, 0.9);
+    if (cols && cols.length >= ci + 3) {
+      col.push(cols[ci], cols[ci + 1], cols[ci + 2]);
+    } else {
+      col.push(0.8, 0.8, 0.8);
+    }
   }
 
   const prevN = layerN, prevS = layerSp;
   layerN = Lc; layerSp = sp;
-
-  if (rMode === 'points' || rMode === 'quantumWave' || rMode === 'plasmaVortex') {
-    buildLayers(pos, col);
-  } else {
-    clearLayers();
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pos), 3));
-    g.setAttribute('customColor', new THREE.BufferAttribute(new Float32Array(col), 3));
-    const count = pos.length / 3;
-    const side = Math.floor(Math.sqrt(count));
-    if (side > 4) {
-      const idxArr = [];
-      for (let y = 0; y < side - 1; y++) for (let x = 0; x < side - 1; x++) {
-        const i = y * side + x;
-        if (i + side + 1 < count) {
-          idxArr.push(i, i + 1, i + side, i + 1, i + side + 1, i + side);
-        }
-      }
-      if (idxArr.length) g.setIndex(idxArr);
-    }
-    g.computeVertexNormals();
-    const mesh = new THREE.Mesh(g, new THREE.MeshStandardMaterial({
-      vertexColors: true, roughness: 0.15, metalness: 0.4,
-      wireframe: rMode === 'wire', side: THREE.DoubleSide
-    }));
-    mesh.rotation.y = Math.PI;
-    scene.add(mesh);
-    layers = [mesh];
-  }
-
+  buildLayers(pos, col);
   layerN = prevN; layerSp = prevS;
   $('nodesD').textContent = ((pos.length / 3) * Lc).toLocaleString();
 }
