@@ -126,16 +126,30 @@ function onWindowResize() {
 }
 
 function processJSONData(json) {
-  // Flexible parsing check
+  // Enhanced flexible parsing logic for various JSON data wrappers
   if (json.HyperStream5D && Array.isArray(json.HyperStream5D)) {
     rawFrames = json.HyperStream5D;
   } else if (Array.isArray(json)) {
     rawFrames = json;
   } else if (typeof json === 'object' && json !== null) {
-    // If it's a single frame object containing 'v' or 'vertices'
-    rawFrames = [json];
+    // Check if the object contains frames inside a property like data, frames, or items
+    const possibleKey = Object.keys(json).find(k => Array.isArray(json[k]));
+    if (possibleKey) {
+      rawFrames = json[possibleKey];
+    } else if (json.v || json.vertices) {
+      rawFrames = [json];
+    } else {
+      // Fallback: extract any array values found in the root object
+      const arrays = Object.values(json.v || json).filter(val => Array.isArray(val));
+      if (arrays.length > 0) {
+        rawFrames = arrays;
+      } else {
+        alert('Invalid format: Could not locate a valid frame array inside the JSON structure.');
+        return;
+      }
+    }
   } else {
-    alert('Invalid format: Missing HyperStream5D array or valid root array.');
+    alert('Invalid format: Missing valid root data structure.');
     return;
   }
 
@@ -174,7 +188,7 @@ function loadPayloadString() {
     return;
   }
   
-  // Quick fallback safety net if user pasted raw comma-separated numbers instead of wrapping array brackets
+  // Safety net if user pasted raw comma-separated numbers or missing brackets
   if (!text.startsWith('[') && !text.startsWith('{')) {
     text = '[' + text + ']';
   }
@@ -192,14 +206,19 @@ function buildEnvironment(frameIndex) {
   const safeIndex = Math.floor(frameIndex) % rawFrames.length;
   const frame = rawFrames[safeIndex];
   
-  // Handle case where array elements are direct coordinate lists vs standard objects
   let vertices = [];
   let colors = [];
   
   if (Array.isArray(frame)) {
-    vertices = frame; // If frame itself is a flat array of numbers
-  } else {
-    vertices = frame.v || frame.vertices || [];
+    // Check if it's a nested array of frames or a flat coordinate array
+    if (frame.length > 0 && Array.isArray(frame[0])) {
+      // If elements are sub-arrays, flatten or take current item context
+      vertices = frame.flat();
+    } else {
+      vertices = frame;
+    }
+  } else if (typeof frame === 'object' && frame !== null) {
+    vertices = frame.v || frame.vertices || frame.coordinates || [];
     colors = frame.c || frame.colors || [];
   }
 
