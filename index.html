@@ -126,8 +126,20 @@ function onWindowResize() {
 }
 
 function processJSONData(json) {
-  rawFrames = json.HyperStream5D || json;
-  if (Array.isArray(rawFrames) && rawFrames.length > 0) {
+  // Flexible parsing check
+  if (json.HyperStream5D && Array.isArray(json.HyperStream5D)) {
+    rawFrames = json.HyperStream5D;
+  } else if (Array.isArray(json)) {
+    rawFrames = json;
+  } else if (typeof json === 'object' && json !== null) {
+    // If it's a single frame object containing 'v' or 'vertices'
+    rawFrames = [json];
+  } else {
+    alert('Invalid format: Missing HyperStream5D array or valid root array.');
+    return;
+  }
+
+  if (rawFrames.length > 0) {
     currentFrameIndex = 0;
     const timeSlider = document.getElementById('time-slider');
     timeSlider.max = rawFrames.length - 1;
@@ -136,7 +148,7 @@ function processJSONData(json) {
     buildEnvironment(0);
     document.getElementById('status-text').innerText = 'Spatial 3D Video Online';
   } else {
-    alert('Invalid format: Missing HyperStream5D array or valid root array.');
+    alert('Loaded payload contains an empty frame array.');
   }
 }
 
@@ -156,11 +168,17 @@ function loadPayloadFile(event) {
 }
 
 function loadPayloadString() {
-  const text = document.getElementById('json-input').value.trim();
+  let text = document.getElementById('json-input').value.trim();
   if (!text) {
     alert('Please paste a JSON string first.');
     return;
   }
+  
+  // Quick fallback safety net if user pasted raw comma-separated numbers instead of wrapping array brackets
+  if (!text.startsWith('[') && !text.startsWith('{')) {
+    text = '[' + text + ']';
+  }
+
   try {
     const json = JSON.parse(text);
     processJSONData(json);
@@ -173,8 +191,17 @@ function buildEnvironment(frameIndex) {
   if (!rawFrames.length) return;
   const safeIndex = Math.floor(frameIndex) % rawFrames.length;
   const frame = rawFrames[safeIndex];
-  const vertices = frame.v || frame.vertices || [];
-  const colors = frame.c || frame.colors || [];
+  
+  // Handle case where array elements are direct coordinate lists vs standard objects
+  let vertices = [];
+  let colors = [];
+  
+  if (Array.isArray(frame)) {
+    vertices = frame; // If frame itself is a flat array of numbers
+  } else {
+    vertices = frame.v || frame.vertices || [];
+    colors = frame.c || frame.colors || [];
+  }
 
   if (spatialMesh) {
     scene.remove(spatialMesh);
@@ -219,7 +246,7 @@ function togglePlayback() {
     playbackInterval = setInterval(() => {
       currentFrameIndex = (currentFrameIndex + 1) % rawFrames.length;
       buildEnvironment(currentFrameIndex);
-    }, 100); // 10fps playback sequence speed
+    }, 100); 
   } else {
     playBtn.style.background = '#0ea5e9';
     clearInterval(playbackInterval);
@@ -235,7 +262,6 @@ function resetPlayback() {
 }
 
 function adjustMeta(val) {
-  // Reserved for additional meta-dimensional matrix weighting if supplied
   if (rawFrames.length > 0) {
     buildEnvironment(currentFrameIndex);
   }
