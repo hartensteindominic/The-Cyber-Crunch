@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HyperStream NEXUS • Sub-Quantum 4D Hyper-Spatial Engine v5.2</title>
+<title>HyperStream NEXUS • Vision-Aligned 4D Hyper-Spatial Engine v5.3</title>
 <style>
 :root{--bg:#000205;--panel:rgba(2,6,23,0.96);--border:#1e293b;--accent:#38bdf8;--accent2:#ec4899;--accent3:#8b5cf6;--accent4:#10b981;--text:#f8fafc;--muted:#94a3b8}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -54,17 +54,16 @@ select{background:#0f172a;color:#fff;border:1px solid #334155;border-radius:5px;
 </head>
 <body>
 <div id="sidebar">
-  <div class="brand">HYPERSTREAM NEXUS 4D<br><span>EASY CONFIGURATION MATRIX</span></div>
+  <div class="brand">HYPERSTREAM NEXUS 4D<br><span>VISION-ALIGNED MATRIX ENGINE</span></div>
 
-  <!-- EASY CONFIGURATION HELPER PANEL -->
   <div class="card" style="border-color: var(--accent);">
-    <div class="title" style="color: var(--accent);">⚡ Quick Hologram Presets (1-Click Setup)</div>
+    <div class="title" style="color: var(--accent);">👁️ Smart Vision Calibration Presets</div>
     <div class="preset-grid">
-      <button class="btn-s" onclick="applyPreset('performance')">🚀 Smooth/Fast</button>
-      <button class="btn-s" onclick="applyPreset('balanced')" style="background:#0f766e">⚖️ Balanced</button>
-      <button class="btn-s" onclick="applyPreset('ultra')" style="background:#7c3aed">💎 Ultra HD</button>
+      <button class="btn-s" onclick="applyPreset('performance')">🚀 Fast Stream</button>
+      <button class="btn-s" onclick="applyPreset('balanced')" style="background:#0f766e">⚖️ Precise Fit</button>
+      <button class="btn-s" onclick="applyPreset('ultra')" style="background:#7c3aed">💎 HD Contour</button>
     </div>
-    <div class="hint">Instantly optimizes performance and resolution profiles for your device hardware.</div>
+    <div class="hint">Adjusts depth recognition sensitivity for accurate surface mapping.</div>
   </div>
 
   <div class="tabs">
@@ -74,18 +73,18 @@ select{background:#0f172a;color:#fff;border:1px solid #334155;border-radius:5px;
   </div>
 
   <div class="card" id="p-cap">
-    <div class="title">True 4D Hyperspace Scan</div>
+    <div class="title">Vision-Mapped 4D Scan</div>
     <button class="btn-d" id="scanBtn" onclick="toggleScan()">ACTIVATE 4D HYPER-SCAN</button>
     <div style="display:flex;gap:6px">
       <button class="btn-s" style="flex:1" id="camBtn" onclick="switchCam()">📷 Sensor</button>
       <button class="btn-s" style="flex:1" id="perfBtn" onclick="togglePerf()">⚡ HyperSpeed</button>
     </div>
     <div class="row"><span>Voxel Resolution Density</span><input type="range" id="step" min="1" max="3" value="1" oninput="stepSize=+this.value;$('stepV').textContent=this.value"><span id="stepV">1</span></div>
-    <div class="row"><span>4D Hyper-Depth Field</span><input type="range" id="depth" min="10" max="200" value="100" oninput="depthMul=+this.value"></div>
-    <div class="row"><span>Quantum Node Size</span><input type="range" id="psize" min="0.002" max="0.04" value="0.008" step="0.001" oninput="ptSize=+this.value;updSize()"></div>
-    <div class="row"><span>4D Hypercube Rotational Speed (W-Axis)</span><input type="range" id="wspd" min="0" max="5" value="1.0" step="0.1" oninput="wSpeed=+this.value"><span id="wspdVal">1.0</span></div>
-    <div class="row"><span>Dimensional Strata Layers</span><input type="range" id="layers" min="2" max="64" value="32" oninput="layerN=+this.value;$('layV').textContent=this.value;buildChips()"><span id="layV">32</span></div>
-    <div class="row"><span>Spatial Dispersion Factor</span><input type="range" id="spread" min="0.1" max="5.0" value="2.0" step="0.05" oninput="layerSp=+this.value"></div>
+    <div class="row"><span>Contour Depth Multiplier</span><input type="range" id="depth" min="10" max="200" value="80" oninput="depthMul=+this.value"></div>
+    <div class="row"><span>Quantum Node Size</span><input type="range" id="psize" min="0.002" max="0.04" value="0.006" step="0.001" oninput="ptSize=+this.value;updSize()"></div>
+    <div class="row"><span>4D Hypercube Rotational Speed (W-Axis)</span><input type="range" id="wspd" min="0" max="5" value="0.8" step="0.1" oninput="wSpeed=+this.value"><span id="wspdVal">0.8</span></div>
+    <div class="row"><span>Dimensional Strata Layers</span><input type="range" id="layers" min="2" max="64" value="28" oninput="layerN=+this.value;$('layV').textContent=this.value;buildChips()"><span id="layV">28</span></div>
+    <div class="row"><span>Spatial Dispersion Factor</span><input type="range" id="spread" min="0.1" max="5.0" value="1.5" step="0.05" oninput="layerSp=+this.value"></div>
     <div style="font-size:9px;color:var(--muted)">Active Voxels <b id="nLive">0</b> · Temporal Vectors <b id="nFrm">0</b></div>
     <div style="display:flex;gap:6px">
       <button class="btn-g" style="flex:1" onclick="expCompressedJSON()">⚡ Export 4D Stream</button>
@@ -131,7 +130,7 @@ select{background:#0f172a;color:#fff;border:1px solid #334155;border-radius:5px;
         <option value="quantumWave">Quantum Harmonic Wave Grid</option>
       </select>
     </div>
-    <div class="row"><span>Neural Bloom Intensity</span><input type="range" id="bloomInt" min="0" max="5" value="2.2" step="0.1" oninput="bloomPass.strength=+this.value"></div>
+    <div class="row"><span>Neural Bloom Intensity</span><input type="range" id="bloomInt" min="0" max="5" value="2.0" step="0.1" oninput="bloomPass.strength=+this.value"></div>
     <div class="row"><span>Audio Reactive Pulse</span><button class="btn-i" style="padding:4px 8px" onclick="initAudioReactivity()">🎙️ Enable Mic Sync</button></div>
     <div class="row"><span>Time/Space Warp Factor</span><input type="range" id="meta" min="0" max="100" value="50" oninput="metaV=this.value/100;$('metaV').textContent=metaV.toFixed(2);isPlay=false;$('playBtn').textContent='▶';if(frames.length)drawFrame(playIdx,metaV)"><span id="metaV">0.50</span></div>
     <div class="row"><span>Temporal Timeline Scrub</span><input type="range" id="scrub" min="0" max="0" value="0" oninput="playIdx=+this.value;isPlay=false;$('playBtn').textContent='▶';if(frames.length)drawFrame(playIdx,metaV)"><span id="scrubV">0/0</span></div>
@@ -150,13 +149,13 @@ select{background:#0f172a;color:#fff;border:1px solid #334155;border-radius:5px;
     <button class="btn-p" style="background:#0d9488" onclick="expPNG()">📸 Snapshot PNG</button>
     <button class="btn-p" style="background:#2563eb" id="webmBtn" onclick="expDimensionalVideo()">🎥 Record 4D Spatial Video</button>
     <div class="prog"><div id="progFill"></div></div>
-    <div class="hint" id="expStatus">4D Hyperspace Pipeline Online.</div>
+    <div class="hint" id="expStatus">Vision Matrix Online.</div>
   </div>
 </div>
 
 <div id="viewer">
   <div class="stats">
-    <span id="status">4D Hyperspace Engine Online</span><br>
+    <span id="status">Vision-Aligned Engine Online</span><br>
     FPS <b id="fpsD">—</b> · 4D Voxels <b id="nodesD">0</b>
   </div>
   <video id="vid" autoplay playsinline muted></video>
@@ -170,13 +169,13 @@ let scene, cam, ren, ctrl, grid, composer, bloomPass;
 let layers = [], prevPos = [];
 let video, c2d, ctx;
 let scanning = false, rec = [], fIdx = 0;
-let stepSize = 1, depthMul = 100, ptSize = 0.008;
-let layerN = 32, layerSp = 2.0, smooth = 0.25;
+let stepSize = 1, depthMul = 80, ptSize = 0.006;
+let layerN = 28, layerSp = 1.5, smooth = 0.25;
 let rMode = 'points', metaV = 0.50, playFPS = 60;
 let isPlay = false, frames = [], playIdx = 0, lastT = 0;
 let autoOrbit = true, doPulse = true, vis = [];
 let facing = 'user', stream = null, ready = false;
-let perf = false, lastVol = 0, wSpeed = 1.0;
+let perf = false, lastVol = 0, wSpeed = 0.8;
 const VOL_MS = 16;
 let fc = 0, ft = 0, phase = 0;
 let exporting = false;
@@ -192,26 +191,25 @@ window.addEventListener('DOMContentLoaded', () => {
   setupInteractivity();
 });
 
-// Easy configuration quick preset helper function
 function applyPreset(type) {
   if (type === 'performance') {
     stepSize = 2; $('step').value = 2; $('stepV').textContent = '2';
     layerN = 16; $('layers').value = 16; $('layV').textContent = '16';
-    ptSize = 0.012; $('psize').value = 0.012;
+    ptSize = 0.009; $('psize').value = 0.009;
     wSpeed = 0.5; $('wspd').value = 0.5; $('wspdVal').textContent = '0.5';
-    $('status').textContent = 'Loaded Preset: Smooth / High Performance';
+    $('status').textContent = 'Preset: Fast Vision Stream';
   } else if (type === 'balanced') {
     stepSize = 1; $('step').value = 1; $('stepV').textContent = '1';
-    layerN = 32; $('layers').value = 32; $('layV').textContent = '32';
-    ptSize = 0.008; $('psize').value = 0.008;
-    wSpeed = 1.0; $('wspd').value = 1.0; $('wspdVal').textContent = '1.0';
-    $('status').textContent = 'Loaded Preset: Balanced Hologram';
+    layerN = 28; $('layers').value = 28; $('layV').textContent = '28';
+    ptSize = 0.006; $('psize').value = 0.006;
+    wSpeed = 0.8; $('wspd').value = 0.8; $('wspdVal').textContent = '0.8';
+    $('status').textContent = 'Preset: Precise Contour Fit';
   } else if (type === 'ultra') {
     stepSize = 1; $('step').value = 1; $('stepV').textContent = '1';
-    layerN = 48; $('layers').value = 48; $('layV').textContent = '48';
-    ptSize = 0.005; $('psize').value = 0.005;
-    wSpeed = 1.5; $('wspd').value = 1.5; $('wspdVal').textContent = '1.5';
-    $('status').textContent = 'Loaded Preset: Ultra HD Resolution';
+    layerN = 40; $('layers').value = 40; $('layV').textContent = '40';
+    ptSize = 0.004; $('psize').value = 0.004;
+    wSpeed = 1.2; $('wspd').value = 1.2; $('wspdVal').textContent = '1.2';
+    $('status').textContent = 'Preset: HD Contour Resolution';
   }
   buildChips();
   updSize();
@@ -241,7 +239,7 @@ function init3() {
 
   bloomPass = new THREE.UnrealBloomPass(
     new THREE.Vector2(box.clientWidth, box.clientHeight),
-    2.2, 0.6, 0.75
+    2.0, 0.6, 0.75
   );
   composer.addPass(bloomPass);
 
@@ -251,7 +249,7 @@ function init3() {
     ctrl.dampingFactor = 0.04;
     ctrl.rotateSpeed = 0.8;
     ctrl.autoRotate = true;
-    ctrl.autoRotateSpeed = 0.6;
+    ctrl.autoRotateSpeed = 0.5;
     ctrl.target.set(0, 0, 0);
   }
 
@@ -259,7 +257,7 @@ function init3() {
   grid.position.y = -2.8;
   scene.add(grid);
 
-  scene.add(new THREE.AmbientLight(0xffffff, 1.2));
+  scene.add(new THREE.AmbientLight(0xffffff, 1.3));
   const l1 = new THREE.DirectionalLight(0x38bdf8, 2.4);
   l1.position.set(6, 10, 8);
   scene.add(l1);
@@ -295,7 +293,7 @@ function initAudioReactivity() {
     analyser.fftSize = 256;
     source.connect(analyser);
     dataArray = new Uint8Array(analyser.frequencyBinCount);
-    $('status').textContent = '4D Hyperspace Mic Sync Active';
+    $('status').textContent = 'Mic Sync Active';
   }).catch(() => {
     $('status').textContent = 'Microphone permission denied';
   });
@@ -331,7 +329,7 @@ function initCam(face) {
   }).then(() => {
     ready = true;
     $('camBtn').textContent = face === 'environment' ? '📷 Back' : '📷 Front';
-    $('status').textContent = '4D Sensor Online';
+    $('status').textContent = 'Vision Sensor Online';
   }).catch(() => {
     if (face !== 'user') initCam('user');
     else $('status').textContent = 'Sensor connection error';
@@ -378,7 +376,7 @@ function loop(now = performance.now()) {
   let audioMod = 0;
   if (analyser && dataArray) {
     analyser.getByteFrequencyData(dataArray);
-    audioMod = (dataArray[6] / 255.0) * 0.35;
+    audioMod = (dataArray[6] / 255.0) * 0.3;
   }
 
   const needSample = ready && video && video.readyState >= 2 && !exporting && !isPlay;
@@ -391,7 +389,7 @@ function loop(now = performance.now()) {
     for (let i = 0; i < layers.length; i++) {
       const o = layers[i];
       if (o && o.visible) {
-        const s = 1 + Math.sin(phase * 3.5 + i * 0.15) * (0.018 + audioMod);
+        const s = 1 + Math.sin(phase * 3.0 + i * 0.15) * (0.015 + audioMod);
         o.scale.setScalar(s);
       }
     }
@@ -409,6 +407,7 @@ function loop(now = performance.now()) {
   else if (ren && scene && cam) ren.render(scene, cam);
 }
 
+// UPGRADED VISION ALIGNMENT & ACCURATE CONTOUR SAMPLING
 function sample() {
   const w = video.videoWidth || 1280;
   const h = video.videoHeight || 720;
@@ -421,34 +420,46 @@ function sample() {
   const pos = [], col = [];
   const cx = w * 0.5, cy = h * 0.5;
   const maxR = Math.hypot(cx, cy) || 1;
-  const sx = 1.8 * Math.min(w / Math.max(h, 1), 2.0);
-  const sy = 1.8;
-  const maxP = perf ? 60000 : 150000;
+  const sx = 1.7 * Math.min(w / Math.max(h, 1), 2.0);
+  const sy = 1.7;
+  const maxP = perf ? 50000 : 120000;
   const step = Math.max(1, stepSize | 0);
 
-  for (let y = 0; y < h && pos.length / 3 < maxP; y += step) {
-    for (let x = 0; x < w && pos.length / 3 < maxP; x += step) {
-      const i = (y * w + x) * 4;
-      const r = pix[i] / 255, g = pix[i + 1] / 255, b = pix[i + 2] / 255;
-      if ((0.299 * r + 0.587 * g + 0.114 * b) < 0.03) continue;
+  for (let y = 1; y < h - 1 && pos.length / 3 < maxP; y += step) {
+    for (let x = 1; x < w - 1 && pos.length / 3 < maxP; x += step) {
+      const idx = (y * w + x) * 4;
+      const r = pix[idx] / 255, g = pix[idx + 1] / 255, b = pix[idx + 2] / 255;
+      const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+
+      // Filter out deep shadows/background for cleaner focus
+      if (lum < 0.05) continue;
+
+      // Smart Edge & Contrast Detection (Gives the model an "eye" for contours)
+      const rightIdx = (y * w + (x + 1)) * 4;
+      const downIdx = ((y + 1) * w + x) * 4;
+      const lumR = 0.299 * (pix[rightIdx]/255) + 0.587 * (pix[rightIdx+1]/255) + 0.114 * (pix[rightIdx+2]/255);
+      const lumD = 0.299 * (pix[downIdx]/255) + 0.587 * (pix[downIdx+1]/255) + 0.114 * (pix[downIdx+2]/255);
+      const edgeFactor = Math.abs(lum - lumR) + Math.abs(lum - lumD);
 
       const nx = ((w - x) / w) * 2 - 1;
       const ny = -((y / h) * 2 - 1);
       const dx = (x - cx) / maxR, dy = (y - cy) / maxR;
-      let nz = ((0.299 * r + 0.587 * g + 0.114 * b) - 0.12) * (depthMul * 0.05) - (dx*dx + dy*dy) * 0.5;
-      let nw = Math.sin(nx * 3 + phase * wSpeed) * 0.5;
+      
+      // Accurate depth mapping using luminance + edge contours
+      let nz = (lum - 0.25) * (depthMul * 0.04) + edgeFactor * 0.8 - (dx*dx + dy*dy) * 0.4;
+      let nw = Math.sin(nx * 3.5 + phase * wSpeed) * 0.4;
 
       if (hologramPhysicsMode === 'vortex') {
-        nz += Math.sin(nx * 5 + phase * 3) * 0.2;
-        nw += Math.cos(ny * 5 + phase * 3) * 0.2;
+        nz += Math.sin(nx * 4 + phase * 3) * 0.18;
+        nw += Math.cos(ny * 4 + phase * 3) * 0.18;
       }
 
-      const theta = phase * wSpeed * 0.5;
+      const theta = phase * wSpeed * 0.4;
       const cosT = Math.cos(theta), sinT = Math.sin(theta);
       const rotX = nx * cosT - nw * sinT;
       const rotW = nx * sinT + nw * cosT;
       
-      const wDist = 2.5;
+      const wDist = 2.4;
       const wFactor = 1 / (wDist - rotW);
 
       pos.push(rotX * sx * wFactor, ny * sy * wFactor, nz * wFactor);
@@ -493,7 +504,7 @@ function buildLayers(basePos, baseCol) {
 
   for (let L = 0; L < layerN; L++) {
     const t = L / maxL;
-    const zOff = (t - 0.5) * layerSp * 2.4;
+    const zOff = (t - 0.5) * layerSp * 2.2;
     const pos = new Float32Array(n * 3);
     const col = new Float32Array(n * 3);
 
@@ -501,8 +512,8 @@ function buildLayers(basePos, baseCol) {
       let px = basePos[j], py = basePos[j + 1], pz = basePos[j + 2] + zOff;
       
       if (hologramPhysicsMode === 'magnetic' && Math.hypot(px - mousePos.x*2, py - mousePos.y*2) < 0.8) {
-        px += (px - mousePos.x*2) * dispersionForce * 0.3;
-        py += (py - mousePos.y*2) * dispersionForce * 0.3;
+        px += (px - mousePos.x*2) * dispersionForce * 0.25;
+        py += (py - mousePos.y*2) * dispersionForce * 0.25;
       }
 
       pos[j] = px; pos[j + 1] = py; pos[j + 2] = pz;
@@ -516,7 +527,7 @@ function buildLayers(basePos, baseCol) {
       g.setAttribute('color', new THREE.BufferAttribute(col, 3));
       o = new THREE.Points(g, new THREE.PointsMaterial({
         size: ptSize, sizeAttenuation: true, vertexColors: true,
-        transparent: true, opacity: Math.max(0.3, 0.99 - L * 0.03), depthWrite: false
+        transparent: true, opacity: Math.max(0.35, 0.98 - L * 0.025), depthWrite: false
       }));
       scene.add(o);
       layers[L] = o;
@@ -540,12 +551,12 @@ function toggleScan() {
     rec = []; fIdx = 0; frames = []; isPlay = false;
     b.textContent = 'STOP 4D HYPER-SCAN';
     b.classList.add('on');
-    $('status').textContent = 'Recording 4D Hyperspace Matrix…';
+    $('status').textContent = 'Recording Vision-Aligned Matrix…';
   } else {
     b.textContent = 'ACTIVATE 4D HYPER-SCAN';
     b.classList.remove('on');
-    $('status').textContent = '4D Scan Complete';
-    $('expStatus').textContent = rec.length + ' temporal 4D vectors locked';
+    $('status').textContent = 'Scan Complete';
+    $('expStatus').textContent = rec.length + ' temporal vectors locked';
   }
 }
 
@@ -581,7 +592,7 @@ function expCompressedJSON() {
   const compressed = btoa(encodeURIComponent(jsonStr));
   $('jsonOut').value = compressed;
   navigator.clipboard.writeText(compressed).catch(() => {});
-  $('expStatus').textContent = '4D compressed code copied to clipboard!';
+  $('expStatus').textContent = 'Compressed code copied to clipboard!';
 }
 
 function copyCompressedJSON() {
@@ -595,7 +606,7 @@ function pasteInDecompress() {
     const jsonStr = decodeURIComponent(atob(raw));
     const data = JSON.parse(jsonStr);
     loadData({ HyperStreamNexus: data.n, layers: data.l, spread: data.s });
-    $('status').textContent = '4D Payload successfully decompressed!';
+    $('status').textContent = 'Payload successfully decompressed!';
   } catch {
     $('status').textContent = 'Decompression Error';
   }
@@ -621,7 +632,7 @@ function mediaFileIn(e) {
     video.src = url;
     video.play();
     ready = true;
-    $('status').textContent = 'Interactive 4D video stream loaded';
+    $('status').textContent = 'Interactive video stream loaded';
   }
 }
 
@@ -629,20 +640,21 @@ function sampleStaticImage() {
   let pix;
   try { pix = ctx.getImageData(0, 0, c2d.width, c2d.height).data; } catch { return; }
   const pos = [], col = [], w = c2d.width, h = c2d.height;
-  const step = Math.max(1, Math.floor(w / 300));
+  const step = Math.max(1, Math.floor(w / 320));
   for (let y = 0; y < h; y += step) {
     for (let x = 0; x < w; x += step) {
       const i = (y * w + x) * 4;
       const r = pix[i]/255, g = pix[i+1]/255, b = pix[i+2]/255;
-      if ((0.299*r + 0.587*g + 0.114*b) < 0.05) continue;
-      pos.push((x/w)*2-1, -((y/h)*2-1), (0.299*r + 0.587*g + 0.114*b)*0.5);
+      const lum = 0.299*r + 0.587*g + 0.114*b;
+      if (lum < 0.05) continue;
+      pos.push((x/w)*2-1, -((y/h)*2-1), lum*0.4);
       col.push(r, g, b);
     }
   }
   frames = [{ vertices: Float32Array.from(pos), colors: Float32Array.from(col), layers: layerN, spread: layerSp }];
   drawFrame(0, 0.5);
   isPlay = false;
-  $('status').textContent = 'Interactive 4D image hologram synthesized!';
+  $('status').textContent = 'Vision-Mapped Hologram Synthesized!';
 }
 
 function drawFrame(idx, meta) {
@@ -685,10 +697,10 @@ function expPNG() {
 function expDimensionalVideo() {
   if (exporting) return;
   exporting = true;
-  $('expStatus').textContent = 'Rendering 4D spatial video...';
+  $('expStatus').textContent = 'Rendering spatial video...';
   setTimeout(() => {
     exporting = false;
-    $('expStatus').textContent = '4D spatial video recorded successfully!';
+    $('expStatus').textContent = 'Spatial video recorded successfully!';
   }, 2000);
 }
 
