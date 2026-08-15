@@ -72,6 +72,10 @@ function init() {
   light.position.set(5, 5, 5);
   scene.add(light);
 
+  // Added 3D Axis Map Helper (Red: X, Green: Y, Blue: Z)
+  const axesHelper = new THREE.AxesHelper(2);
+  scene.add(axesHelper);
+
   window.addEventListener('resize', onWindowResize);
   animate();
 }
