@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HyperStream XD • Ultimate 4D Quantum Holographic Environment v4.1</title>
+<title>HyperStream XD • Ultimate Maximum Density v4.2</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#020617;color:#f8fafc;font-family:system-ui,-apple-system,sans-serif;height:100vh;display:flex;overflow:hidden}
@@ -33,7 +33,6 @@ canvas{display:block;width:100%;height:100%}
 .chip.on{background:#ec4899;border-color:#db2777;color:#fff}
 textarea{width:100%;height:45px;background:#0f172a;border:1px solid #334155;border-radius:6px;color:#f8fafc;font-size:9px;padding:6px;resize:none;font-family:ui-monospace,monospace}
 .drop{border:1.5px dashed #475569;padding:12px;border-radius:8px;text-align:center;font-size:10px;cursor:pointer;color:#94a3b8;background:rgba(15,23,42,0.5)}
-.drop.over{border-color:#ec4899;background:rgba(236,72,153,0.1)}
 input[type=file]{display:none}
 #vid{display:none}
 select{background:#0f172a;color:#fff;border:1px solid #334155;border-radius:5px;font-size:10px;padding:3px 6px}
@@ -54,7 +53,7 @@ select{background:#0f172a;color:#fff;border:1px solid #334155;border-radius:5px;
 </head>
 <body>
 <div id="sidebar">
-  <div class="brand">HYPERSTREAM XD • v4.1<br><span>SPATIAL MATRIX & DEPTH ENGINE</span></div>
+  <div class="brand">HYPERSTREAM XD • v4.2<br><span>UNLIMITED DENSITY ENGINE</span></div>
 
   <div class="tabs">
     <button class="tab on" id="t-cap" onclick="mode('cap')">📡 Live 4D</button>
@@ -63,19 +62,19 @@ select{background:#0f172a;color:#fff;border:1px solid #334155;border-radius:5px;
   </div>
 
   <div class="card" id="p-cap">
-    <div class="title">Volumetric Matrix Scan</div>
-    <button class="btn-d" id="scanBtn" onclick="toggleScan()">ACTIVATE 4D MATRIX SCAN</button>
+    <div class="title">Maximum Capacity Matrix Scan</div>
+    <button class="btn-d" id="scanBtn" onclick="toggleScan()">ACTIVATE UNLIMITED SCAN</button>
     <div style="display:flex;gap:6px">
       <button class="btn-s" style="flex:1" id="camBtn" onclick="switchCam()">📷 Sensor</button>
-      <button class="btn-s" style="flex:1" id="perfBtn" onclick="togglePerf()">⚡ Turbo Engine</button>
+      <button class="btn-s" style="flex:1" id="perfBtn" onclick="togglePerf()">⚡ Max Resolution</button>
     </div>
-    <div class="row"><span>Voxel Density</span><input type="range" id="step" min="1" max="3" value="1" oninput="stepSize=+this.value;$('stepV').textContent=this.value"><span id="stepV">1</span></div>
-    <div class="row"><span>Hyper-Depth Field</span><input type="range" id="depth" min="10" max="120" value="80" oninput="depthMul=+this.value"></div>
+    <div class="row"><span>Voxel Step Size (1 = Full Res)</span><input type="range" id="step" min="1" max="4" value="1" oninput="stepSize=+this.value;$('stepV').textContent=this.value"><span id="stepV">1</span></div>
+    <div class="row"><span>Hyper-Depth Field</span><input type="range" id="depth" min="10" max="150" value="90" oninput="depthMul=+this.value"></div>
     <div class="row"><span>Background Invert Mode</span><input type="checkbox" id="invBg" checked onchange="invertBackground = this.checked"></div>
-    <div class="row"><span>Quantum Node Size</span><input type="range" id="psize" min="0.005" max="0.06" value="0.015" step="0.001" oninput="ptSize=+this.value"></div>
-    <div class="row"><span>Dimensional Strata</span><input type="range" id="layers" min="2" max="24" value="14" oninput="layerN=+this.value;$('layV').textContent=this.value;buildChips()"><span id="layV">14</span></div>
-    <div class="row"><span>Spatial Dispersion</span><input type="range" id="spread" min="0.2" max="4.0" value="1.6" step="0.05" oninput="layerSp=+this.value"></div>
-    <div style="font-size:9px;color:#94a3b8">Active Voxels <b id="nLive">0</b> · Temporal Frames <b id="nFrm">0</b></div>
+    <div class="row"><span>Quantum Node Size</span><input type="range" id="psize" min="0.002" max="0.04" value="0.012" step="0.001" oninput="ptSize=+this.value"></div>
+    <div class="row"><span>Dimensional Strata</span><input type="range" id="layers" min="2" max="32" value="16" oninput="layerN=+this.value;$('layV').textContent=this.value;buildChips()"><span id="layV">16</span></div>
+    <div class="row"><span>Spatial Dispersion</span><input type="range" id="spread" min="0.2" max="5.0" value="1.8" step="0.05" oninput="layerSp=+this.value"></div>
+    <div style="font-size:9px;color:#94a3b8">Active Voxels <b id="nLive">0</b> · Total Map Nodes <b id="nFrm">0</b></div>
     <div style="display:flex;gap:6px">
       <button class="btn-g" style="flex:1" onclick="expJSON()">Export Matrix</button>
       <button class="btn-s" style="flex:1" onclick="copyJSON()">Copy</button>
@@ -145,7 +144,7 @@ select{background:#0f172a;color:#fff;border:1px solid #334155;border-radius:5px;
 
 <div id="viewer">
   <div class="stats">
-    <span id="status">Quantum Engine v4.1 Online</span><br>
+    <span id="status">Quantum Engine v4.2 Online</span><br>
     FPS <b id="fpsD">—</b> · Voxels <b id="nodesD">0</b>
   </div>
   <video id="vid" autoplay playsinline muted></video>
@@ -159,14 +158,14 @@ let scene, cam, ren, ctrl, grid, composer, bloomPass, glitchPass, glitchUniforms
 let layers = [], prevPos = [], velocities = [];
 let video, c2d, ctx;
 let scanning = false, rec = [], fIdx = 0;
-let stepSize = 1, depthMul = 80, ptSize = 0.015;
-let layerN = 14, layerSp = 1.6, smooth = 0.35;
+let stepSize = 1, depthMul = 90, ptSize = 0.012;
+let layerN = 16, layerSp = 1.8, smooth = 0.35;
 let rMode = 'points', metaV = 0.4, playFPS = 30;
 let isPlay = false, frames = [], playIdx = 0, lastT = 0;
 let autoOrbit = true, doPulse = true, doMouseForce = true, vis = [];
 let facing = 'user', stream = null, ready = false;
 let perf = false, lastVol = 0, invertBackground = true;
-const VOL_MS = 25;
+const VOL_MS = 20;
 let fc = 0, ft = 0, phase = 0;
 let exporting = false;
 let audioCtx, analyser, dataArray;
@@ -211,7 +210,7 @@ const GlowPointShaderMaterial = {
       vColor = customColor;
       vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
       vDist = -mvPosition.z;
-      gl_PointSize = (14.0 / (-mvPosition.z)) * 1.5;
+      gl_PointSize = (12.0 / (-mvPosition.z)) * 1.5;
       gl_Position = projectionMatrix * mvPosition;
     }
   `,
@@ -374,19 +373,19 @@ function switchCam() {
 function togglePerf() {
   perf = !perf;
   if (perf) {
-    stepSize = 2; layerN = 8; ptSize = 0.02;
-    $('step').value = 2; $('stepV').textContent = '2';
-    $('layers').value = 8; $('layV').textContent = '8';
-    $('psize').value = 0.02;
-    $('perfBtn').style.background = '#10b981';
-    $('perfBtn').textContent = '⚡ Turbo ON';
-  } else {
-    stepSize = 1; layerN = 14; ptSize = 0.015;
+    stepSize = 1; layerN = 20; ptSize = 0.008;
     $('step').value = 1; $('stepV').textContent = '1';
-    $('layers').value = 14; $('layV').textContent = '14';
-    $('psize').value = 0.015;
+    $('layers').value = 20; $('layV').textContent = '20';
+    $('psize').value = 0.008;
+    $('perfBtn').style.background = '#10b981';
+    $('perfBtn').textContent = '⚡ Full Max Res';
+  } else {
+    stepSize = 1; layerN = 16; ptSize = 0.012;
+    $('step').value = 1; $('stepV').textContent = '1';
+    $('layers').value = 16; $('layV').textContent = '16';
+    $('psize').value = 0.012;
     $('perfBtn').style.background = '';
-    $('perfBtn').textContent = '⚡ Turbo Engine';
+    $('perfBtn').textContent = '⚡ Max Resolution';
   }
   buildChips();
 }
@@ -465,12 +464,12 @@ function sample() {
   const maxR = Math.hypot(cx, cy) || 1;
   const sx = 1.6 * Math.min(w / Math.max(h, 1), 1.6);
   const sy = 1.6;
-  const maxP = perf ? 40000 : 90000;
   const step = Math.max(1, stepSize | 0);
-  const thr = 0.007;
+  const thr = 0.005;
 
-  for (let y = 0; y < h && pos.length / 3 < maxP; y += step) {
-    for (let x = 0; x < w && pos.length / 3 < maxP; x += step) {
+  // Unbounded node accumulation to maximize mapped density
+  for (let y = 0; y < h; y += step) {
+    for (let x = 0; x < w; x += step) {
       const i = (y * w + x) * 4;
       const r = pix[i] / 255, g = pix[i + 1] / 255, b = pix[i + 2] / 255;
       const lum = 0.299 * r + 0.587 * g + 0.114 * b;
@@ -481,7 +480,6 @@ function sample() {
       const dx = (x - cx) / maxR, dy = (y - cy) / maxR;
       const rad = dx * dx + dy * dy;
 
-      // Spatial depth adjustment: invert luminance mapping so white backgrounds recede away instead of protruding forward
       const depthFactor = invertBackground ? (1.0 - lum) : lum;
       let nz = (depthFactor - 0.5) * (depthMul * 0.04) - (rad * 0.45);
 
@@ -649,11 +647,11 @@ function toggleScan() {
     frames = [];
     isPlay = false;
     $('playBtn').textContent = '▶';
-    b.textContent = 'STOP MATRIX SCAN';
+    b.textContent = 'STOP UNLIMITED SCAN';
     b.classList.add('on');
-    $('status').textContent = 'Recording 4D Quantum Matrix…';
+    $('status').textContent = 'Recording Maximum Density Matrix…';
   } else {
-    b.textContent = 'ACTIVATE 4D MATRIX SCAN';
+    b.textContent = 'ACTIVATE UNLIMITED SCAN';
     b.classList.remove('on');
     $('status').textContent = 'Scan Complete';
     $('jsonOut').value = JSON.stringify({ HyperStreamXD: rec, layers: layerN, spread: layerSp });
@@ -955,7 +953,7 @@ function expDimensionalVideo() {
 
   try {
     canvasStream = $('c3').captureStream(fps);
-    mr = new MediaRecorder(canvasStream, { mimeType: mime, videoBitsPerSecond: 8000000 });
+    mr = new MediaRecorder(canvasStream, { mimeType: mime, videoBitsPerSecond: 12000000 });
   } catch (e) {
     cleanupExport(btn, wasOrbit, wasPulse);
     return;
