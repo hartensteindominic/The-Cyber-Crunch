@@ -106,8 +106,8 @@ select{background:#0f172a;color:#fff;border:1px solid #334155;border-radius:5px;
         <option value="plasmaVortex">Plasma Vortex Field</option>
       </select>
     </div>
-    <div class="row"><span>Neural Bloom Intensity</span><input type="range" id="bloomInt" min="0" max="4" value="1.5" step="0.1" oninput="bloomPass.strength=+this.value"></div>
-    <div class="row"><span>Glitch Aberration</span><input type="range" id="glitchAmt" min="0" max="1" value="0.2" step="0.05" oninput="glitchUniforms.amount.value=+this.value"></div>
+    <div class="row"><span>Neural Bloom Intensity</span><input type="range" id="bloomInt" min="0" max="4" value="1.5" step="0.1" oninput="if(bloomPass)bloomPass.strength=+this.value"></div>
+    <div class="row"><span>Glitch Aberration</span><input type="range" id="glitchAmt" min="0" max="1" value="0.2" step="0.05" oninput="if(glitchUniforms)glitchUniforms.amount.value=+this.value"></div>
     <div class="row"><span>Audio Reactive Pulse</span><button class="btn-i" style="padding:4px 8px" onclick="initAudioReactivity()">🎙️ Enable Mic Sync</button></div>
     <div class="row"><span>Time/Space Warp</span><input type="range" id="meta" min="0" max="100" value="40" oninput="metaV=this.value/100;$('metaV').textContent=metaV.toFixed(2);isPlay=false;$('playBtn').textContent='▶';if(frames.length)drawFrame(playIdx,metaV)"><span id="metaV">0.40</span></div>
     <div class="row"><span>Temporal Timeline</span><input type="range" id="scrub" min="0" max="0" value="0" oninput="playIdx=+this.value;isPlay=false;$('playBtn').textContent='▶';if(frames.length)drawFrame(playIdx,metaV)"><span id="scrubV">0/0</span></div>
@@ -168,7 +168,6 @@ let fc = 0, ft = 0, phase = 0;
 let exporting = false;
 let audioCtx, analyser, dataArray;
 
-// Custom Glitch/Chromatic Aberration Shader
 const ChromaticGlitchShader = {
   uniforms: {
     'tDiffuse': { value: null },
@@ -224,7 +223,6 @@ function init3() {
   ren.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   ren.setClearColor(0x020617);
 
-  // Post-Processing Composer setup with UnrealBloom & Chromatic Glitch
   composer = new THREE.EffectComposer(ren);
   const renderPass = new THREE.RenderPass(scene, cam);
   composer.addPass(renderPass);
