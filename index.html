@@ -3,161 +3,53 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HyperStream NEXUS • Vision-Aligned 4D Hyper-Spatial Engine v5.4</title>
+<title>Simple 3D Hologram Creator</title>
 <style>
-:root{--bg:#000205;--panel:rgba(2,6,23,0.96);--border:#1e293b;--accent:#38bdf8;--accent2:#ec4899;--accent3:#8b5cf6;--accent4:#10b981;--text:#f8fafc;--muted:#94a3b8}
+:root{--bg:#030712;--panel:#111827;--accent:#3b82f6;--text:#f9fafb;--muted:#9ca3af}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif;height:100vh;display:flex;overflow:hidden}
-#sidebar{width:460px;min-width:350px;background:var(--panel);backdrop-filter:blur(32px);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:12px;gap:8px;overflow-y:auto;z-index:10}
-.brand{font-size:13px;font-weight:900;letter-spacing:1.5px;color:var(--accent);line-height:1.3}
-.brand span{background:linear-gradient(90deg,#38bdf8,#ec4899,#8b5cf6,#10b981,#f59e0b,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.card{background:rgba(15,23,42,0.85);border:1px solid #334155;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px}
-.title{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
-.row{display:flex;justify-content:space-between;align-items:center;font-size:10px;gap:6px;color:#cbd5e1}
-input[type=range]{accent-color:var(--accent2);width:110px;cursor:pointer}
-button{border:none;border-radius:6px;padding:8px;font-size:10px;font-weight:800;cursor:pointer;color:#fff;transition:transform 0.1s ease}
-button:active{transform:scale(0.97)}
-.btn-p{background:linear-gradient(135deg,#8b5cf6,#ec4899,#38bdf8)}.btn-p:hover{filter:brightness(1.15)}
-.btn-d{background:#ef4444;width:100%}.btn-d.on{background:#f97316}
-.btn-s{background:#1e293b;color:#f1f5f9;border:1px solid #475569}
-.btn-g{background:#10b981}
-.btn-i{background:#0ea5e9}
-.tabs{display:flex;gap:4px}
-.tab{flex:1;padding:7px;background:#1e293b;border:1px solid #334155;border-radius:6px;color:var(--muted);font-size:10px;font-weight:700;cursor:pointer;text-align:center}
-.tab.on{background:linear-gradient(135deg,#8b5cf6,#ec4899);color:#fff;border-color:transparent}
-#viewer{flex:1;position:relative;background:radial-gradient(circle at center,#1e1b4b 0%,#000205 95%)}
+body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;height:100vh;display:flex;overflow:hidden}
+#sidebar{width:320px;background:var(--panel);border-right:1px solid #1f2937;display:flex;flex-direction:column;padding:16px;gap:16px;z-index:10}
+h1{font-size:16px;font-weight:800;color:var(--accent);letter-spacing:1px}
+.control-group{display:flex;flex-direction:column;gap:8px}
+label{font-size:12px;font-weight:600;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
+button{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;transition:opacity 0.2s}
+button:hover{opacity:0.9}
+button.secondary{background:#374151}
+#viewer{flex:1;position:relative}
 canvas{display:block;width:100%;height:100%}
-.stats{position:absolute;top:12px;right:12px;background:rgba(2,6,23,0.88);backdrop-filter:blur(10px);padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);font-size:10px;color:var(--muted);line-height:1.4;z-index:5}
-.stats b{color:var(--accent2)}
-.chips{display:flex;flex-wrap:wrap;gap:4px}
-.chip{font-size:9px;padding:3px 7px;border-radius:5px;background:#1e293b;border:1px solid #475569;cursor:pointer;user-select:none}
-.chip.on{background:var(--accent2);border-color:#db2777;color:#fff}
-textarea{width:100%;height:45px;background:#0f172a;border:1px solid #334155;border-radius:6px;color:#f8fafc;font-size:9px;padding:6px;resize:none;font-family:ui-monospace,monospace}
-.drop{border:1.5px dashed #475569;padding:12px;border-radius:8px;text-align:center;font-size:10px;cursor:pointer;color:var(--muted);background:rgba(15,23,42,0.5)}
-.drop.over{border-color:var(--accent2);background:rgba(236,72,153,0.1)}
-input[type=file]{display:none}
 #vid{display:none}
-select{background:#0f172a;color:#fff;border:1px solid #334155;border-radius:5px;font-size:10px;padding:3px 6px}
-.prog{height:5px;background:#1e293b;border-radius:3px;overflow:hidden;margin-top:3px}
-.prog>div{height:100%;background:linear-gradient(90deg,#38bdf8,#ec4899,#10b981);width:0%;transition:width .1s}
-.hint{font-size:9px;color:var(--muted);line-height:1.3}
-.preset-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:4px}
+.hint{font-size:11px;color:var(--muted);line-height:1.4}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
 </head>
 <body>
+
 <div id="sidebar">
-  <div class="brand">HYPERSTREAM NEXUS 4D<br><span>VISION-ALIGNED MATRIX ENGINE</span></div>
+  <h1>✨ 3D Hologram Maker</h1>
+  <div class="hint">Turn your webcam stream into a live interactive 3D particle hologram instantly.</div>
 
-  <div class="card" style="border-color: var(--accent);">
-    <div class="title" style="color: var(--accent);">👁️ Smart Vision Calibration Presets</div>
-    <div class="preset-grid">
-      <button class="btn-s" onclick="applyPreset('performance')">🚀 Fast Stream</button>
-      <button class="btn-s" onclick="applyPreset('balanced')" style="background:#0f766e">⚖️ Precise Fit</button>
-      <button class="btn-s" onclick="applyPreset('ultra')" style="background:#7c3aed">💎 HD Contour</button>
-    </div>
-    <div class="hint">Adjusts depth recognition sensitivity for accurate surface mapping.</div>
+  <div class="control-group">
+    <button id="camBtn" onclick="toggleCamera()">📷 Start Camera</button>
   </div>
 
-  <div class="tabs">
-    <button class="tab on" id="t-cap" onclick="mode('cap')">📡 4D Matrix</button>
-    <button class="tab" id="t-media" onclick="mode('media')">🖼️ Interactive Media</button>
-    <button class="tab" id="t-load" onclick="mode('load')">📂 Load</button>
+  <div class="control-group">
+    <label>Hologram Depth / Pop-out</label>
+    <input type="range" id="depthRange" min="20" max="250" value="100" oninput="depthFactor = +this.value">
   </div>
 
-  <div class="card" id="p-cap">
-    <div class="title">Vision-Mapped 4D Scan</div>
-    <button class="btn-d" id="scanBtn" onclick="toggleScan()">ACTIVATE 4D HYPER-SCAN</button>
-    <div style="display:flex;gap:6px">
-      <button class="btn-s" style="flex:1" id="camBtn" onclick="switchCam()">📷 Sensor</button>
-      <button class="btn-s" style="flex:1" id="perfBtn" onclick="togglePerf()">⚡ HyperSpeed</button>
-    </div>
-    <div class="row"><span>Voxel Resolution Density</span><input type="range" id="step" min="1" max="3" value="1" oninput="stepSize=+this.value;$('stepV').textContent=this.value"><span id="stepV">1</span></div>
-    <div class="row"><span>Contour Depth Multiplier</span><input type="range" id="depth" min="10" max="200" value="80" oninput="depthMul=+this.value"></div>
-    <div class="row"><span>Quantum Node Size</span><input type="range" id="psize" min="0.002" max="0.04" value="0.006" step="0.001" oninput="ptSize=+this.value;updSize()"></div>
-    <div class="row"><span>4D Hypercube Rotational Speed (W-Axis)</span><input type="range" id="wspd" min="0" max="5" value="0.8" step="0.1" oninput="wSpeed=+this.value"><span id="wspdVal">0.8</span></div>
-    <div class="row"><span>Dimensional Strata Layers</span><input type="range" id="layers" min="2" max="64" value="28" oninput="layerN=+this.value;$('layV').textContent=this.value;buildChips()"><span id="layV">28</span></div>
-    <div class="row"><span>Spatial Dispersion Factor</span><input type="range" id="spread" min="0.1" max="5.0" value="1.5" step="0.05" oninput="layerSp=+this.value"></div>
-    <div style="font-size:9px;color:var(--muted)">Active Voxels <b id="nLive">0</b> · Temporal Vectors <b id="nFrm">0</b></div>
-    <div style="display:flex;gap:6px">
-      <button class="btn-g" style="flex:1" onclick="expCompressedJSON()">⚡ Export 4D Stream</button>
-      <button class="btn-s" style="flex:1" onclick="copyCompressedJSON()">Copy Code</button>
-    </div>
-    <textarea id="jsonOut" readonly placeholder="Base64 4D coordinate payload..."></textarea>
+  <div class="control-group">
+    <label>Particle Glow Size</label>
+    <input type="range" id="sizeRange" min="0.003" max="0.02" value="0.007" step="0.001" oninput="particleSize = +this.value; updateSize()">
   </div>
 
-  <div class="card" id="p-media" style="display:none">
-    <div class="title">Interactive 4D Image & Video Synthesizer</div>
-    <div class="drop" id="mediaDrop" onclick="$('mediaFi').click()">Drop Interactive Image/Video or Click
-      <input type="file" id="mediaFi" accept="image/*,video/*" onchange="mediaFileIn(event)">
-    </div>
-    <div class="row"><span>4D Hyperspace Physics</span>
-      <select id="interactiveMode" onchange="hologramPhysicsMode=this.value">
-        <option value="quantum">4D Hyper-Wave Ripple</option>
-        <option value="magnetic">Magnetic W-Axis Repulsion</option>
-        <option value="vortex">Hyperspatial Vortex Warp</option>
-      </select>
-    </div>
-    <div class="row"><span>Touch/Mouse Dispersion</span><input type="range" id="touchForce" min="0" max="2" value="0.8" step="0.1" oninput="dispersionForce=+this.value"></div>
-  </div>
-
-  <div class="card" id="p-load" style="display:none">
-    <div class="title">Import & Decompress 4D Payload</div>
-    <div class="drop" id="drop" onclick="$('fi').click()">Drop Matrix File or Paste Below
-      <input type="file" id="fi" accept=".json,.hologram" onchange="fileIn(event)">
-    </div>
-    <textarea id="jsonIn" placeholder='Paste compressed 4D hologram string here...'></textarea>
-    <div style="display:flex;gap:6px;margin-top:4px">
-      <button class="btn-p" style="flex:1" onclick="pasteInDecompress()">Decompress & Synthesize</button>
-      <button class="btn-s" style="flex:1" onclick="clearAll()">Purge Hyperspace</button>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="title">4D FX & Audio Engine</div>
-    <div class="row"><span>Render Matrix Engine</span>
-      <select id="rmode" onchange="rMode=this.value;if(frames.length)drawFrame(playIdx,metaV)">
-        <option value="points">4D Sub-Quantum Point Matrix</option>
-        <option value="solid">Crystalline Hyper-Mesh</option>
-        <option value="wire">Spatial Wireframe Lattice</option>
-        <option value="quantumWave">Quantum Harmonic Wave Grid</option>
-      </select>
-    </div>
-    <div class="row"><span>Neural Bloom Intensity</span><input type="range" id="bloomInt" min="0" max="5" value="2.0" step="0.1" oninput="bloomPass.strength=+this.value"></div>
-    <div class="row"><span>Audio Reactive Pulse</span><button class="btn-i" style="padding:4px 8px" onclick="initAudioReactivity()">🎙️ Enable Mic Sync</button></div>
-    <div class="row"><span>Time/Space Warp Factor</span><input type="range" id="meta" min="0" max="100" value="50" oninput="metaV=this.value/100;$('metaV').textContent=metaV.toFixed(2);isPlay=false;$('playBtn').textContent='▶';if(frames.length)drawFrame(playIdx,metaV)"><span id="metaV">0.50</span></div>
-    <div class="row"><span>Temporal Timeline Scrub</span><input type="range" id="scrub" min="0" max="0" value="0" oninput="playIdx=+this.value;isPlay=false;$('playBtn').textContent='▶';if(frames.length)drawFrame(playIdx,metaV)"><span id="scrubV">0/0</span></div>
-    <div style="display:flex;gap:6px">
-      <button class="btn-s" style="flex:1" id="playBtn" onclick="togglePlay()">▶ Play Stream</button>
-      <button class="btn-s" style="flex:1" onclick="resetCam()">↺ Recenter</button>
-    </div>
-    <div class="row"><span>Auto Orbit</span><input type="checkbox" id="orbit" checked onchange="autoOrbit=this.checked"></div>
-    <div class="row"><span>Quantum Pulse Field</span><input type="checkbox" id="pulse" checked onchange="doPulse=this.checked"></div>
-    <div class="title" style="margin-top:4px">Strata Selector Nodes</div>
-    <div class="chips" id="chips"></div>
-  </div>
-
-  <div class="card">
-    <div class="title">Export 4D Holographic Media</div>
-    <button class="btn-p" style="background:#0d9488" onclick="expPNG()">📸 Snapshot PNG</button>
-    <button class="btn-p" style="background:#2563eb" id="webmBtn" onclick="expDimensionalVideo()">🎥 Record 4D Spatial Video</button>
-    <div class="prog"><div id="progFill"></div></div>
-    <div class="hint" id="expStatus">Vision Matrix Online.</div>
+  <div class="control-group" style="margin-top:auto">
+    <button class="secondary" onclick="saveHologramImage()">💾 Save Hologram Snapshot</button>
   </div>
 </div>
 
 <div id="viewer">
-  <div class="stats">
-    <span id="status">Vision-Aligned Engine Online</span><br>
-    FPS <b id="fpsD">—</b> · 4D Voxels <b id="nodesD">0</b>
-  </div>
   <video id="vid" autoplay playsinline muted></video>
   <canvas id="c3"></canvas>
 </div>
@@ -165,560 +57,145 @@ select{background:#0f172a;color:#fff;border:1px solid #334155;border-radius:5px;
 <script>
 const $ = id => document.getElementById(id);
 
-let scene, cam, ren, ctrl, grid, composer, bloomPass;
-let layers = [], prevPos = [];
-let video, c2d, ctx;
-let scanning = false, rec = [], fIdx = 0;
-let stepSize = 1, depthMul = 80, ptSize = 0.006;
-let layerN = 28, layerSp = 1.5, smooth = 0.25;
-let rMode = 'points', metaV = 0.50, playFPS = 60;
-let isPlay = false, frames = [], playIdx = 0, lastT = 0;
-let autoOrbit = true, doPulse = true, vis = [];
-let facing = 'user', stream = null, ready = false;
-let perf = false, lastVol = 0, wSpeed = 0.8;
-const VOL_MS = 16;
-let fc = 0, ft = 0, phase = 0;
-let exporting = false;
-let audioCtx, analyser, dataArray;
-let mousePos = new THREE.Vector2(0,0), raycaster = new THREE.Raycaster();
-let hologramPhysicsMode = 'quantum', dispersionForce = 0.8;
+let scene, camera, renderer, controls, particleMesh;
+let video, canvas2D, ctx2D;
+let streamRunning = false;
+let depthFactor = 100, particleSize = 0.007;
 
 window.addEventListener('DOMContentLoaded', () => {
-  init3();
-  initCam('user');
-  dropInit();
-  buildChips();
-  setupInteractivity();
+  initThree();
+  initVideoSource();
+  animate();
 });
 
-function applyPreset(type) {
-  if (type === 'performance') {
-    stepSize = 2; $('step').value = 2; $('stepV').textContent = '2';
-    layerN = 16; $('layers').value = 16; $('layV').textContent = '16';
-    ptSize = 0.009; $('psize').value = 0.009;
-    wSpeed = 0.5; $('wspd').value = 0.5; $('wspdVal').textContent = '0.5';
-    $('status').textContent = 'Preset: Fast Vision Stream';
-  } else if (type === 'balanced') {
-    stepSize = 1; $('step').value = 1; $('stepV').textContent = '1';
-    layerN = 28; $('layers').value = 28; $('layV').textContent = '28';
-    ptSize = 0.006; $('psize').value = 0.006;
-    wSpeed = 0.8; $('wspd').value = 0.8; $('wspdVal').textContent = '0.8';
-    $('status').textContent = 'Preset: Precise Contour Fit';
-  } else if (type === 'ultra') {
-    stepSize = 1; $('step').value = 1; $('stepV').textContent = '1';
-    layerN = 40; $('layers').value = 40; $('layV').textContent = '40';
-    ptSize = 0.004; $('psize').value = 0.004;
-    wSpeed = 1.2; $('wspd').value = 1.2; $('wspdVal').textContent = '1.2';
-    $('status').textContent = 'Preset: HD Contour Resolution';
-  }
-  buildChips();
-  updSize();
-}
-
-function init3() {
-  const box = $('viewer');
+function initThree() {
+  const container = $('viewer');
   scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x000205, 0.008);
-  
-  cam = new THREE.PerspectiveCamera(52, box.clientWidth / box.clientHeight, 0.02, 4000);
-  cam.position.set(0, 0.4, 3.2);
+  scene.fog = new THREE.FogExp2(0x030712, 0.01);
 
-  ren = new THREE.WebGLRenderer({
-    canvas: $('c3'),
-    antialias: true,
-    powerPreference: 'high-performance',
-    preserveDrawingBuffer: true,
-    alpha: false
-  });
-  ren.setSize(box.clientWidth, box.clientHeight);
-  ren.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-  ren.setClearColor(0x000205);
+  camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
+  camera.position.set(0, 0, 3);
 
-  composer = new THREE.EffectComposer(ren);
-  composer.addPass(new THREE.RenderPass(scene, cam));
+  renderer = new THREE.WebGLRenderer({ canvas: $('c3'), antialias: true });
+  renderer.setSize(container.clientWidth, container.clientHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-  bloomPass = new THREE.UnrealBloomPass(
-    new THREE.Vector2(box.clientWidth, box.clientHeight),
-    2.0, 0.6, 0.75
-  );
-  composer.addPass(bloomPass);
-
-  if (typeof THREE.OrbitControls === 'function') {
-    ctrl = new THREE.OrbitControls(cam, ren.domElement);
-    ctrl.enableDamping = true;
-    ctrl.dampingFactor = 0.04;
-    ctrl.rotateSpeed = 0.8;
-    ctrl.autoRotate = true;
-    ctrl.autoRotateSpeed = 0.5;
-    ctrl.target.set(0, 0, 0);
-  }
-
-  grid = new THREE.GridHelper(80, 80, 0xec4899, 0x0f172a);
-  grid.position.y = -2.8;
-  scene.add(grid);
-
-  scene.add(new THREE.AmbientLight(0xffffff, 1.3));
-  const l1 = new THREE.DirectionalLight(0x38bdf8, 2.4);
-  l1.position.set(6, 10, 8);
-  scene.add(l1);
-
-  const l2 = new THREE.DirectionalLight(0xec4899, 1.8);
-  l2.position.set(-6, -4, -6);
-  scene.add(l2);
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.autoRotate = true;
+  controls.autoRotateSpeed = 1.0;
 
   window.addEventListener('resize', () => {
-    if (!box || !cam || !ren || !composer) return;
-    cam.aspect = box.clientWidth / box.clientHeight;
-    cam.updateProjectionMatrix();
-    ren.setSize(box.clientWidth, box.clientHeight);
-    composer.setSize(box.clientWidth, box.clientHeight);
-  });
-
-  loop();
-}
-
-function setupInteractivity() {
-  window.addEventListener('mousemove', e => {
-    const box = $('viewer').getBoundingClientRect();
-    mousePos.x = ((e.clientX - box.left) / box.width) * 2 - 1;
-    mousePos.y = -((e.clientY - box.top) / box.height) * 2 + 1;
+    camera.aspect = container.clientWidth / container.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(container.clientWidth, container.clientHeight);
   });
 }
 
-function initAudioReactivity() {
-  navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(s => {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const source = audioCtx.createMediaStreamSource(s);
-    analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 256;
-    source.connect(analyser);
-    dataArray = new Uint8Array(analyser.frequencyBinCount);
-    $('status').textContent = 'Mic Sync Active';
-  }).catch(() => {
-    $('status').textContent = 'Microphone permission denied';
-  });
-}
-
-function stopStream() {
-  if (stream) {
-    stream.getTracks().forEach(t => t.stop());
-    stream = null;
-  }
-  ready = false;
-}
-
-function initCam(face) {
+function initVideoSource() {
   video = $('vid');
-  c2d = document.createElement('canvas');
-  ctx = c2d.getContext('2d', { willReadFrequently: true });
-  stopStream();
-
-  if (!navigator.mediaDevices?.getUserMedia) {
-    $('status').textContent = 'Sensor API unavailable';
-    return;
-  }
-
-  navigator.mediaDevices.getUserMedia({
-    video: { facingMode: { ideal: face }, width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 60 } },
-    audio: false
-  }).then(s => {
-    stream = s;
-    facing = face;
-    video.srcObject = s;
-    return video.play();
-  }).then(() => {
-    ready = true;
-    $('camBtn').textContent = face === 'environment' ? '📷 Back' : '📷 Front';
-    $('status').textContent = 'Vision Sensor Online';
-  }).catch(() => {
-    if (face !== 'user') initCam('user');
-    else $('status').textContent = 'Sensor connection error';
-  });
+  canvas2D = document.createElement('canvas');
+  ctx2D = canvas2D.getContext('2d', { willReadFrequently: true });
 }
 
-function switchCam() {
-  initCam(facing === 'user' ? 'environment' : 'user');
-}
-
-function togglePerf() {
-  perf = !perf;
-  if (perf) {
-    applyPreset('performance');
-    $('perfBtn').style.background = '#10b981';
-    $('perfBtn').textContent = '⚡ HyperSpeed ON';
+function toggleCamera() {
+  if (!streamRunning) {
+    navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 }, audio: false })
+      .then(s => {
+        video.srcObject = s;
+        video.play();
+        streamRunning = true;
+        $('camBtn.textContent') = '🔴 Stop Camera';
+      })
+      .catch(() => alert('Camera access denied or unavailable.'));
   } else {
-    applyPreset('balanced');
-    $('perfBtn').style.background = '';
-    $('perfBtn').textContent = '⚡ HyperSpeed';
+    const s = video.srcObject;
+    if (s) s.getTracks().forEach(t => t.stop());
+    video.srcObject = null;
+    streamRunning = false;
+    $('camBtn').textContent = '📷 Start Camera';
   }
 }
 
-function resetCam() {
-  cam.position.set(0, 0.4, 3.2);
-  if (ctrl) { ctrl.target.set(0, 0, 0); ctrl.update(); }
+function updateSize() {
+  if (particleMesh) particleMesh.material.size = particleSize;
 }
 
-function loop(now = performance.now()) {
-  requestAnimationFrame(loop);
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
 
-  if (ctrl && !exporting) {
-    ctrl.autoRotate = !!autoOrbit;
-    ctrl.update();
+  if (streamRunning && video.readyState >= 2) {
+    processVideoFrame();
   }
 
-  phase = now * 0.001;
-  fc++;
-  if (now - ft > 1000) {
-    $('fpsD').textContent = Math.round((fc * 1000) / (now - ft));
-    fc = 0; ft = now;
-  }
-
-  let audioMod = 0;
-  if (analyser && dataArray) {
-    analyser.getByteFrequencyData(dataArray);
-    audioMod = (dataArray[6] / 255.0) * 0.3;
-  }
-
-  const needSample = ready && video && video.readyState >= 2 && !exporting && !isPlay;
-  if (needSample && (now - lastVol > VOL_MS)) {
-    lastVol = now;
-    sample();
-  }
-
-  if (doPulse && layers.length && rMode === 'points' && !exporting) {
-    for (let i = 0; i < layers.length; i++) {
-      const o = layers[i];
-      if (o && o.visible) {
-        const s = 1 + Math.sin(phase * 3.0 + i * 0.15) * (0.015 + audioMod);
-        o.scale.setScalar(s);
-      }
-    }
-  }
-
-  if (isPlay && frames.length && !exporting && (now - lastT > 1000 / 60)) {
-    drawFrame(playIdx, metaV);
-    playIdx = (playIdx + 1) % frames.length;
-    $('scrub').value = playIdx;
-    $('scrubV').textContent = playIdx + '/' + Math.max(0, frames.length - 1);
-    lastT = now;
-  }
-
-  if (composer && !exporting) composer.render();
-  else if (ren && scene && cam) ren.render(scene, cam);
+  renderer.render(scene, camera);
 }
 
-// HARD-FIXED RIGID CONTOUR RECOGNITION MAPPING
-function sample() {
-  const w = video.videoWidth || 1280;
-  const h = video.videoHeight || 720;
-  if (c2d.width !== w || c2d.height !== h) { c2d.width = w; c2d.height = h; }
-  try { ctx.drawImage(video, 0, 0, w, h); } catch { return; }
-
-  let pix;
-  try { pix = ctx.getImageData(0, 0, w, h).data; } catch { return; }
-
-  const pos = [], col = [];
-  const cx = w * 0.5, cy = h * 0.5;
-  const maxR = Math.hypot(cx, cy) || 1;
-  const sx = 1.7 * Math.min(w / Math.max(h, 1), 2.0);
-  const sy = 1.7;
-  const maxP = perf ? 50000 : 120000;
-  const step = Math.max(1, stepSize | 0);
-
-  for (let y = 1; y < h - 1 && pos.length / 3 < maxP; y += step) {
-    for (let x = 1; x < w - 1 && pos.length / 3 < maxP; x += step) {
-      const idx = (y * w + x) * 4;
-      const r = pix[idx] / 255, g = pix[idx + 1] / 255, b = pix[idx + 2] / 255;
-      const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-
-      if (lum < 0.08) continue;
-
-      const rightIdx = (y * w + (x + 1)) * 4;
-      const downIdx = ((y + 1) * w + x) * 4;
-      const lumR = 0.299 * (pix[rightIdx]/255) + 0.587 * (pix[rightIdx+1]/255) + 0.114 * (pix[rightIdx+2]/255);
-      const lumD = 0.299 * (pix[downIdx]/255) + 0.587 * (pix[downIdx+1]/255) + 0.114 * (pix[downIdx+2]/255);
-      const edgeFactor = Math.abs(lum - lumR) + Math.abs(lum - lumD);
-
-      if (edgeFactor < 0.02 && lum > 0.85) continue; // Skip blown out background highlights
-
-      const nx = ((w - x) / w) * 2 - 1;
-      const ny = -((y / h) * 2 - 1);
-      const dx = (x - cx) / maxR, dy = (y - cy) / maxR;
-      
-      let nz = (lum - 0.3) * (depthMul * 0.05) + edgeFactor * 1.2 - (dx*dx + dy*dy) * 0.5;
-      let nw = Math.sin(nx * 3.5 + phase * wSpeed) * 0.4;
-
-      if (hologramPhysicsMode === 'vortex') {
-        nz += Math.sin(nx * 4 + phase * 3) * 0.18;
-        nw += Math.cos(ny * 4 + phase * 3) * 0.18;
-      }
-
-      const theta = phase * wSpeed * 0.4;
-      const cosT = Math.cos(theta), sinT = Math.sin(theta);
-      const rotX = nx * cosT - nw * sinT;
-      const rotW = nx * sinT + nw * cosT;
-      
-      const wDist = 2.4;
-      const wFactor = 1 / (wDist - rotW);
-
-      pos.push(rotX * sx * wFactor, ny * sy * wFactor, nz * wFactor);
-      col.push(r, g, b);
-    }
+function processVideoFrame() {
+  const w = video.videoWidth || 640;
+  const h = video.videoHeight || 480;
+  if (canvas2D.width !== w || canvas2D.height !== h) {
+    canvas2D.width = w;
+    canvas2D.height = h;
   }
 
-  const n = pos.length / 3;
-  $('nLive').textContent = n.toLocaleString();
-  $('nodesD').textContent = (n * layerN).toLocaleString();
+  ctx2D.drawImage(video, 0, 0, w, h);
+  const imgData = ctx2D.getImageData(0, 0, w, h).data;
 
-  buildLayers(pos, col);
+  const positions = [];
+  const colors = [];
+  const step = 4; // Skip pixels for performance
 
-  if (scanning) {
-    rec.push({ v: Float32Array.from(pos), c: Float32Array.from(col), layers: layerN, spread: layerSp });
-    fIdx++;
-    $('nFrm').textContent = rec.length;
-  }
-}
-
-function clearLayers() {
-  for (const o of layers) {
-    if (!o) continue;
-    scene.remove(o);
-    if (o.geometry) o.geometry.dispose();
-    if (o.material) o.material.dispose();
-  }
-  layers = [];
-  prevPos = [];
-}
-
-function buildLayers(basePos, baseCol) {
-  while (layers.length > layerN) {
-    const o = layers.pop();
-    if (o) { scene.remove(o); o.geometry.dispose(); o.material.dispose(); }
-    prevPos.pop();
-  }
-
-  const n = basePos.length / 3;
-  if (n < 5) return;
-  const maxL = Math.max(1, layerN - 1);
-
-  for (let L = 0; L < layerN; L++) {
-    const t = L / maxL;
-    const zOff = (t - 0.5) * layerSp * 2.2;
-    const pos = new Float32Array(n * 3);
-    const col = new Float32Array(n * 3);
-
-    for (let i = 0, j = 0; i < n; i++, j += 3) {
-      let px = basePos[j], py = basePos[j + 1], pz = basePos[j + 2] + zOff;
-      
-      if (hologramPhysicsMode === 'magnetic' && Math.hypot(px - mousePos.x*2, py - mousePos.y*2) < 0.8) {
-        px += (px - mousePos.x*2) * dispersionForce * 0.25;
-        py += (py - mousePos.y*2) * dispersionForce * 0.25;
-      }
-
-      pos[j] = px; pos[j + 1] = py; pos[j + 2] = pz;
-      col[j] = baseCol[j]; col[j + 1] = baseCol[j + 1]; col[j + 2] = baseCol[j + 2];
-    }
-
-    let o = layers[L];
-    if (!o) {
-      const g = new THREE.BufferGeometry();
-      g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-      g.setAttribute('color', new THREE.BufferAttribute(col, 3));
-      o = new THREE.Points(g, new THREE.PointsMaterial({
-        size: ptSize, sizeAttenuation: true, vertexColors: true,
-        transparent: true, opacity: Math.max(0.35, 0.98 - L * 0.025), depthWrite: false
-      }));
-      scene.add(o);
-      layers[L] = o;
-    } else {
-      o.geometry.attributes.position.array.set(pos);
-      o.geometry.attributes.position.needsUpdate = true;
-      o.material.size = ptSize;
-    }
-    o.visible = vis[L] !== false;
-  }
-}
-
-function updSize() {
-  layers.forEach((o, L) => { if (o?.material) o.material.size = ptSize; });
-}
-
-function toggleScan() {
-  scanning = !scanning;
-  const b = $('scanBtn');
-  if (scanning) {
-    rec = []; fIdx = 0; frames = []; isPlay = false;
-    b.textContent = 'STOP 4D HYPER-SCAN';
-    b.classList.add('on');
-    $('status').textContent = 'Recording Vision-Aligned Matrix…';
-  } else {
-    b.textContent = 'ACTIVATE 4D HYPER-SCAN';
-    b.classList.remove('on');
-    $('status').textContent = 'Scan Complete';
-    $('expStatus').textContent = rec.length + ' temporal vectors locked';
-  }
-}
-
-function mode(m) {
-  ['cap', 'media', 'load'].forEach(x => {
-    $('t-' + x).classList.toggle('on', x === m);
-    $('p-' + x).style.display = x === m ? 'flex' : 'none';
-  });
-}
-
-function buildChips() {
-  const c = $('chips');
-  if (!c) return;
-  c.innerHTML = '';
-  for (let i = 0; i < layerN; i++) {
-    if (vis[i] === undefined) vis[i] = true;
-    const d = document.createElement('div');
-    d.className = 'chip' + (vis[i] ? ' on' : '');
-    d.textContent = 'Strata ' + (i + 1);
-    d.onclick = () => {
-      vis[i] = !vis[i];
-      if (layers[i]) layers[i].visible = vis[i];
-      d.classList.toggle('on', vis[i]);
-    };
-    c.appendChild(d);
-  }
-}
-
-function expCompressedJSON() {
-  if (!rec.length && !frames.length) return;
-  const payload = { n: rec.length ? rec : frames, l: layerN, s: layerSp };
-  const jsonStr = JSON.stringify(payload);
-  const compressed = btoa(encodeURIComponent(jsonStr));
-  $('jsonOut').value = compressed;
-  navigator.clipboard.writeText(compressed).catch(() => {});
-  $('expStatus').textContent = 'Compressed code copied to clipboard!';
-}
-
-function copyCompressedJSON() {
-  const t = $('jsonOut').value;
-  if (t) navigator.clipboard.writeText(t).catch(() => {});
-}
-
-function pasteInDecompress() {
-  try {
-    const raw = $('jsonIn').value.trim();
-    const jsonStr = decodeURIComponent(atob(raw));
-    const data = JSON.parse(jsonStr);
-    loadData({ HyperStreamNexus: data.n, layers: data.l, spread: data.s });
-    $('status').textContent = 'Payload successfully decompressed!';
-  } catch {
-    $('status').textContent = 'Decompression Error';
-  }
-}
-
-function mediaFileIn(e) {
-  const f = e.target.files[0];
-  if (!f) return;
-  const reader = new FileReader();
-  if (f.type.startsWith('image')) {
-    reader.onload = evt => {
-      const img = new Image();
-      img.onload = () => {
-        c2d.width = img.width; c2d.height = img.height;
-        ctx.drawImage(img, 0, 0);
-        sampleStaticImage();
-      };
-      img.src = evt.target.result;
-    };
-    reader.readAsDataURL(f);
-  } else if (f.type.startsWith('video')) {
-    const url = URL.createObjectURL(f);
-    video.src = url;
-    video.play();
-    ready = true;
-    $('status').textContent = 'Interactive video stream loaded';
-  }
-}
-
-function sampleStaticImage() {
-  let pix;
-  try { pix = ctx.getImageData(0, 0, c2d.width, c2d.height).data; } catch { return; }
-  const pos = [], col = [], w = c2d.width, h = c2d.height;
-  const step = Math.max(1, Math.floor(w / 320));
   for (let y = 0; y < h; y += step) {
     for (let x = 0; x < w; x += step) {
       const i = (y * w + x) * 4;
-      const r = pix[i]/255, g = pix[i+1]/255, b = pix[i+2]/255;
-      const lum = 0.299*r + 0.587*g + 0.114*b;
-      if (lum < 0.05) continue;
-      pos.push((x/w)*2-1, -((y/h)*2-1), lum*0.4);
-      col.push(r, g, b);
+      const r = imgData[i] / 255;
+      const g = imgData[i + 1] / 255;
+      const b = imgData[i + 2] / 255;
+      
+      const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
+      if (brightness < 0.1) continue; // Skip dark background
+
+      const posX = (x / w) * 2 - 1;
+      const posY = -((y / h) * 2 - 1);
+      const posZ = (brightness - 0.5) * (depthFactor * 0.01);
+
+      positions.push(posX * 1.2, posY * 1.2, posZ);
+      colors.push(r, g, b);
     }
   }
-  frames = [{ vertices: Float32Array.from(pos), colors: Float32Array.from(col), layers: layerN, spread: layerSp }];
-  drawFrame(0, 0.5);
-  isPlay = false;
-  $('status').textContent = 'Vision-Mapped Hologram Synthesized!';
+
+  if (!particleMesh) {
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geom.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    
+    const mat = new THREE.PointsMaterial({
+      size: particleSize,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.9,
+      sizeAttenuation: true
+    });
+
+    particleMesh = new THREE.Points(geom, mat);
+    scene.add(particleMesh);
+  } else {
+    particleMesh.geometry.attributes.position.array.set(positions);
+    particleMesh.geometry.attributes.position.needsUpdate = true;
+    particleMesh.geometry.attributes.color.array.set(colors);
+    particleMesh.geometry.attributes.color.needsUpdate = true;
+  }
 }
 
-function drawFrame(idx, meta) {
-  if (!frames.length) return;
-  const f = frames[idx % frames.length];
-  buildLayers(f.vertices, f.colors);
+function saveHologramImage() {
+  renderer.render(scene, camera);
+  const link = document.createElement('a');
+  link.download = 'hologram-snapshot.png';
+  link.href = renderer.domElement.toDataURL('image/png');
+  link.click();
 }
-
-function loadData(data) {
-  const raw = data.HyperStreamNexus || data.n;
-  if (!raw) return;
-  frames = raw.map(f => ({ vertices: new Float32Array(f.v || f.vertices), colors: new Float32Array(f.c || f.colors) }));
-  playIdx = 0; isPlay = true;
-  $('playBtn').textContent = '⏸';
-  if (data.layers || data.l) { layerN = data.layers || data.l; $('layers').value = layerN; $('layV').textContent = layerN; }
-  drawFrame(0, metaV);
-  buildChips();
-}
-
-function clearAll() {
-  isPlay = false; frames = []; playIdx = 0; clearLayers();
-  $('nodesD').textContent = '0'; $('status').textContent = 'Hyperspace Purged';
-}
-
-function togglePlay() {
-  if (!frames.length) return;
-  isPlay = !isPlay;
-  $('playBtn').textContent = isPlay ? '⏸' : '▶';
-}
-
-function expPNG() {
-  if (!layers.length) return;
-  if (composer) composer.render(); else ren.render(scene, cam);
-  const a = document.createElement('a');
-  a.href = $('c3').toDataURL('image/png');
-  a.download = 'hologram_4d_' + Date.now() + '.png';
-  a.click();
-}
-
-function expDimensionalVideo() {
-  if (exporting) return;
-  exporting = true;
-  $('expStatus').textContent = 'Rendering spatial video...';
-  setTimeout(() => {
-    exporting = false;
-    $('expStatus').textContent = 'Spatial video recorded successfully!';
-  }, 2000);
-}
-
-function dropInit() {
-  const d = $('drop');
-  if (!d) return;
-  d.addEventListener('dragover', e => e.preventDefault());
-  d.addEventListener('drop', e => {
-    e.preventDefault();
-    if (e.dataTransfer.files[0]) {
-      const r = new FileReader();
-      r.onload = ev => {
-        try { loadData(JSON.parse(ev.target.result)); } catch { $('jsonIn').value = ev.target.result; pasteInDecompress(); }
-      };
-      r.readAsText(e.dataTransfer.files[0]);
-    }
-  });
-}
-function fileIn(e) { if (e.target.files[0]) dropInit(); }
 </script>
 </body>
 </html>
