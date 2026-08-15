@@ -1,108 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CYBER_CRUNCH_v7.0</title>
-    <style>
-        :root { --neon: #39ff14; --bg: #000; }
-        body { background: var(--bg); color: var(--neon); font-family: monospace; text-align: center; margin: 0; touch-action: none; }
-        
-        .nav { background: #111; border-bottom: 2px solid var(--neon); padding: 10px; display: flex; justify-content: space-between; }
-        .nav a { color: var(--neon); text-decoration: none; font-size: 0.8rem; border: 1px solid var(--neon); padding: 5px; }
-
-        canvas { border: 2px solid var(--neon); background: #000; margin: 10px auto; display: block; width: 90vw; height: 90vw; max-width: 360px; }
-        
-        .controls { display: grid; grid-template-columns: repeat(3, 75px); gap: 10px; justify-content: center; margin: 10px auto; }
-        .btn { width: 75px; height: 65px; background: #111; border: 2px solid var(--neon); color: var(--neon); font-size: 1.5rem; display: flex; align-items: center; justify-content: center; border-radius: 10px; -webkit-user-select: none; }
-        .btn:active { background: var(--neon); color: #000; }
-        
-        .up { grid-column: 2; } .left { grid-column: 1; grid-row: 2; } .down { grid-column: 2; grid-row: 2; } .right { grid-column: 3; grid-row: 2; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HyperStream5D Spatial Environment Viewer</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #030712; color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+  header { background: #0b0f19; border-bottom: 1px solid #1f2937; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+  .brand { font-size: 14px; font-weight: 800; letter-spacing: 1px; color: #38bdf8; }
+  .brand span { color: #a855f7; }
+  #viewer { flex: 1; position: relative; width: 100%; height: 100%; }
+  canvas { display: block; width: 100%; height: 100%; }
+  .controls-panel { position: absolute; top: 20px; left: 20px; background: rgba(11, 15, 25, 0.85); backdrop-filter: blur(10px); border: 1px solid #1f2937; padding: 15px; border-radius: 10px; width: 300px; display: flex; flex-direction: column; gap: 10px; font-size: 12px; z-index: 10; }
+  .file-drop { border: 2px dashed #334155; padding: 15px; border-radius: 8px; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); }
+  .file-drop:hover { border-color: #a855f7; }
+  input[type="file"] { display: none; }
+  .btn { background: #7c3aed; color: #fff; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; font-size: 12px; }
+  .btn:hover { background: #6d28d9; }
+  .status { color: #94a3b8; font-size: 11px; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
 
-<div class="nav">
-    <a href="https://hartensteindominic.github.io/">◄ HUB</a>
-    <span style="font-size: 0.7rem;">SCORE: <span id="s">0</span></span>
-    <a href="#" onclick="location.reload()">REBOOT</a>
-</div>
+<header>
+  <div class="brand">SPATIAL VIEWER • <span>HYPERSTREAM 5D</span></div>
+  <div class="status" id="status-text">Awaiting Spatial Payload</div>
+</header>
 
-<div style="margin: 10px 0;">
-    <iframe data-aa='2426199' src='https://acceptable.a-ads.com/2426199/?size=Adaptive' style='border:0; width:300px; height:50px;'></iframe>
-</div>
-
-<canvas id="game" width="400" height="400"></canvas>
-
-<div class="controls">
-    <div class="btn up" ontouchstart="setDir('UP')">▲</div>
-    <div class="btn left" ontouchstart="setDir('LEFT')">◀</div>
-    <div class="btn down" ontouchstart="setDir('DOWN')">▼</div>
-    <div class="btn right" ontouchstart="setDir('RIGHT')">▶</div>
+<div id="viewer">
+  <div class="controls-panel">
+    <div style="font-weight:700; text-transform:uppercase; color:#94a3b8; letter-spacing:.5px;">Environment Ingestion</div>
+    <div class="file-drop" onclick="document.getElementById('file-input').click()">
+      <span>Drop HyperStream JSON Here<br><small style="color:#64748b">or click to browse</small></span>
+      <input type="file" id="file-input" accept=".json" onchange="loadPayload(event)">
+    </div>
+    <div style="display:flex; flex-direction:column; gap:6px;">
+      <label style="color:#cbd5e1;">Meta-Dimension Slider</label>
+      <input type="range" min="0" max="100" value="0" id="meta-slider" oninput="adjustMeta(this.value)" style="accent-color:#a855f7; cursor:pointer;">
+    </div>
+    <div class="status" id="node-stats">Nodes Loaded: 0</div>
+  </div>
+  <canvas id="canvas"></canvas>
 </div>
 
 <script>
-    const canvas = document.getElementById("game");
-    const ctx = canvas.getContext("2d");
-    const box = 20;
-    let score = 0;
-    let snake = [{x: 10 * box, y: 10 * box}];
-    let food = {x: Math.floor(Math.random()*19+1)*box, y: Math.floor(Math.random()*19+1)*box};
-    let d = "RIGHT"; // Start moving right automatically
+let scene, camera, renderer, controls, spatialMesh;
+let rawFrames = [];
 
-    function setDir(dir) {
-        if(dir == "LEFT" && d != "RIGHT") d = "LEFT";
-        if(dir == "UP" && d != "DOWN") d = "UP";
-        if(dir == "RIGHT" && d != "LEFT") d = "RIGHT";
-        if(dir == "DOWN" && d != "UP") d = "DOWN";
+init();
+
+function init() {
+  const container = document.getElementById('viewer');
+  scene = new THREE.Scene();
+  
+  camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+  camera.position.set(0, 0, 3);
+
+  renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
+  renderer.setSize(container.clientWidth, container.clientHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setClearColor(0x030712);
+
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  
+  scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+  const light = new THREE.DirectionalLight(0xffffff, 1);
+  light.position.set(5, 5, 5);
+  scene.add(light);
+
+  window.addEventListener('resize', onWindowResize);
+  animate();
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+function onWindowResize() {
+  const container = document.getElementById('viewer');
+  camera.aspect = container.clientWidth / container.clientHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(container.clientWidth, container.clientHeight);
+}
+
+function loadPayload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const json = JSON.parse(e.target.result);
+      rawFrames = json.HyperStream5D || json;
+      if (Array.isArray(rawFrames) && rawFrames.length > 0) {
+        buildEnvironment(0);
+        document.getElementById('status-text').innerText = 'Spatial Environment Online';
+      } else {
+        alert('Invalid format: Missing HyperStream5D array.');
+      }
+    } catch(err) {
+      alert('Error parsing JSON: ' + err.message);
     }
+  };
+  reader.readAsText(file);
+}
 
-    function draw() {
-        ctx.fillStyle = "black";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+function buildEnvironment(frameIndex, metaBlend = 0) {
+  if (!rawFrames.length) return;
+  const frame = rawFrames[frameIndex % rawFrames.length];
+  const vertices = frame.v || frame.vertices || [];
+  const colors = frame.c || frame.colors || [];
 
-        for(let i=0; i<snake.length; i++) {
-            ctx.fillStyle = (i == 0) ? "white" : "#39ff14";
-            ctx.fillRect(snake[i].x, snake[i].y, box-2, box-2);
-        }
+  if (spatialMesh) {
+    scene.remove(spatialMesh);
+    spatialMesh.geometry.dispose();
+    spatialMesh.material.dispose();
+  }
 
-        ctx.fillStyle = "#ff003c";
-        ctx.fillRect(food.x, food.y, box-2, box-2);
+  const geometry = new THREE.BufferGeometry();
+  const posArr = new Float32Array(vertices);
+  geometry.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
 
-        let sX = snake[0].x;
-        let sY = snake[0].y;
+  if (colors.length > 0) {
+    geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+  }
 
-        if(d == "LEFT") sX -= box;
-        if(d == "UP") sY -= box;
-        if(d == "RIGHT") sX += box;
-        if(d == "DOWN") sY += box;
+  const material = new THREE.PointsMaterial({
+    size: 0.03,
+    vertexColors: colors.length > 0,
+    color: colors.length > 0 ? undefined : 0x38bdf8
+  });
 
-        if(sX == food.x && sY == food.y) {
-            score++;
-            document.getElementById("s").innerText = score;
-            food = {x: Math.floor(Math.random()*19+1)*box, y: Math.floor(Math.random()*19+1)*box};
-        } else {
-            snake.pop();
-        }
+  spatialMesh = new THREE.Points(geometry, material);
+  scene.add(spatialMesh);
+  document.getElementById('node-stats').innerText = `Nodes Loaded: ${(vertices.length / 3).toLocaleString()}`;
+}
 
-        let head = {x: sX, y: sY};
-
-        if(sX < 0 || sX >= 400 || sY < 0 || sY >= 400 || collision(head, snake)) {
-            location.reload(); 
-        }
-
-        snake.unshift(head);
-    }
-
-    function collision(head, array) {
-        for(let i=0; i<array.length; i++) {
-            if(head.x == array[i].x && head.y == array[i].y) return true;
-        }
-        return false;
-    }
-
-    let game = setInterval(draw, 120);
+function adjustMeta(val) {
+  const blend = val / 100;
+  if (rawFrames.length > 0) {
+    buildEnvironment(0, blend);
+  }
+}
 </script>
-
 </body>
 </html>
