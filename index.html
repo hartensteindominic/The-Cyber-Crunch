@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HyperStream NEXUS • Vision-Aligned 4D Hyper-Spatial Engine v5.3</title>
+<title>HyperStream NEXUS • Vision-Aligned 4D Hyper-Spatial Engine v5.4</title>
 <style>
 :root{--bg:#000205;--panel:rgba(2,6,23,0.96);--border:#1e293b;--accent:#38bdf8;--accent2:#ec4899;--accent3:#8b5cf6;--accent4:#10b981;--text:#f8fafc;--muted:#94a3b8}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -407,7 +407,7 @@ function loop(now = performance.now()) {
   else if (ren && scene && cam) ren.render(scene, cam);
 }
 
-// UPGRADED VISION ALIGNMENT & ACCURATE CONTOUR SAMPLING
+// HARD-FIXED RIGID CONTOUR RECOGNITION MAPPING
 function sample() {
   const w = video.videoWidth || 1280;
   const h = video.videoHeight || 720;
@@ -431,22 +431,21 @@ function sample() {
       const r = pix[idx] / 255, g = pix[idx + 1] / 255, b = pix[idx + 2] / 255;
       const lum = 0.299 * r + 0.587 * g + 0.114 * b;
 
-      // Filter out deep shadows/background for cleaner focus
-      if (lum < 0.05) continue;
+      if (lum < 0.08) continue;
 
-      // Smart Edge & Contrast Detection (Gives the model an "eye" for contours)
       const rightIdx = (y * w + (x + 1)) * 4;
       const downIdx = ((y + 1) * w + x) * 4;
       const lumR = 0.299 * (pix[rightIdx]/255) + 0.587 * (pix[rightIdx+1]/255) + 0.114 * (pix[rightIdx+2]/255);
       const lumD = 0.299 * (pix[downIdx]/255) + 0.587 * (pix[downIdx+1]/255) + 0.114 * (pix[downIdx+2]/255);
       const edgeFactor = Math.abs(lum - lumR) + Math.abs(lum - lumD);
 
+      if (edgeFactor < 0.02 && lum > 0.85) continue; // Skip blown out background highlights
+
       const nx = ((w - x) / w) * 2 - 1;
       const ny = -((y / h) * 2 - 1);
       const dx = (x - cx) / maxR, dy = (y - cy) / maxR;
       
-      // Accurate depth mapping using luminance + edge contours
-      let nz = (lum - 0.25) * (depthMul * 0.04) + edgeFactor * 0.8 - (dx*dx + dy*dy) * 0.4;
+      let nz = (lum - 0.3) * (depthMul * 0.05) + edgeFactor * 1.2 - (dx*dx + dy*dy) * 0.5;
       let nw = Math.sin(nx * 3.5 + phase * wSpeed) * 0.4;
 
       if (hologramPhysicsMode === 'vortex') {
