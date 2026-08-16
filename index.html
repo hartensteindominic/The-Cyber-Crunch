@@ -1,0 +1,2920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,
+               user-scalable=no,viewport-fit=cover">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<title>HyperStream Fusion</title>
+
+<style>
+:root{
+  --bg:#000;
+  --glass:rgba(18,18,22,.88);
+  --line:rgba(255,255,255,.11);
+  --text:#f5f5f7;
+  --muted:#8e8e93;
+  --blue:#0a84ff;
+  --purple:#bf5af2;
+  --pink:#ff375f;
+  --green:#30d158;
+  --orange:#ff9f0a;
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  -webkit-tap-highlight-color:transparent;
+}
+
+html,
+body{
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#000;
+  color:var(--text);
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Text",
+    system-ui,
+    sans-serif;
+}
+
+body{
+  touch-action:manipulation;
+}
+
+#view{
+  position:fixed;
+  inset:0;
+  background:#000;
+}
+
+#c{
+  width:100%;
+  height:100%;
+  display:block;
+}
+
+.hidden{
+  display:none !important;
+}
+
+/* TOP */
+
+.top{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  z-index:20;
+  padding:
+    calc(13px + env(safe-area-inset-top))
+    15px
+    8px;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+
+  pointer-events:none;
+}
+
+.logo{
+  font-size:17px;
+  font-weight:750;
+  letter-spacing:-.4px;
+  text-shadow:0 2px 15px #000;
+}
+
+.logo span{
+  opacity:.4;
+  font-size:11px;
+  margin-left:5px;
+  font-weight:500;
+}
+
+.pill{
+  pointer-events:auto;
+
+  display:flex;
+  align-items:center;
+  gap:7px;
+
+  padding:7px 11px;
+  border-radius:20px;
+
+  background:#0009;
+  border:1px solid var(--line);
+
+  backdrop-filter:blur(25px);
+  -webkit-backdrop-filter:blur(25px);
+
+  font-size:11px;
+  font-weight:600;
+}
+
+/* BOTTOM */
+
+.sheet{
+  position:fixed;
+  left:10px;
+  right:10px;
+  bottom:10px;
+
+  z-index:30;
+
+  max-height:72vh;
+  overflow:auto;
+
+  background:var(--glass);
+
+  border:1px solid var(--line);
+  border-radius:24px;
+
+  padding:
+    13px
+    13px
+    calc(13px + env(safe-area-inset-bottom));
+
+  backdrop-filter:blur(35px);
+  -webkit-backdrop-filter:blur(35px);
+
+  box-shadow:
+    0 20px 60px #0008,
+    inset 0 1px 0 #fff08;
+}
+
+.status{
+  min-height:19px;
+  margin-bottom:8px;
+
+  text-align:center;
+
+  color:var(--blue);
+  font-size:13px;
+  font-weight:500;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:
+    repeat(4,1fr);
+
+  gap:6px;
+
+  margin-bottom:8px;
+}
+
+.stat{
+  padding:7px 4px;
+
+  border-radius:12px;
+
+  background:#ffffff08;
+
+  text-align:center;
+
+  color:var(--muted);
+  font-size:9px;
+}
+
+.stat b{
+  display:block;
+
+  margin-top:2px;
+
+  color:var(--text);
+
+  font-size:12px;
+}
+
+.grid2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+}
+
+.grid3{
+  display:grid;
+  grid-template-columns:
+    repeat(3,1fr);
+
+  gap:7px;
+}
+
+button{
+  width:100%;
+
+  border:0;
+  border-radius:14px;
+
+  padding:13px 8px;
+
+  color:#fff;
+
+  background:#303034;
+
+  font-family:inherit;
+  font-size:14px;
+  font-weight:650;
+
+  cursor:pointer;
+
+  transition:
+    transform .08s,
+    opacity .15s;
+}
+
+button:active{
+  transform:scale(.97);
+}
+
+button:disabled{
+  opacity:.3;
+  pointer-events:none;
+}
+
+.primary{
+  background:
+    linear-gradient(
+      135deg,
+      var(--purple),
+      var(--pink)
+    );
+}
+
+.blue{
+  background:var(--blue);
+}
+
+.green{
+  background:var(--green);
+  color:#000;
+}
+
+.red{
+  background:var(--pink);
+}
+
+.orange{
+  background:var(--orange);
+  color:#000;
+}
+
+/* PANELS */
+
+.panel{
+  display:none;
+
+  margin-top:8px;
+
+  padding:11px;
+
+  background:#0009;
+
+  border:1px solid var(--line);
+  border-radius:17px;
+}
+
+.panel.show{
+  display:block;
+}
+
+.row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+
+  gap:10px;
+
+  margin:6px 0;
+
+  font-size:12px;
+}
+
+.muted{
+  color:var(--muted);
+}
+
+.dot{
+  display:inline-block;
+
+  width:7px;
+  height:7px;
+
+  margin-right:5px;
+
+  border-radius:50%;
+
+  background:#555;
+}
+
+.dot.on{
+  background:var(--green);
+  box-shadow:
+    0 0 8px var(--green);
+}
+
+.qr{
+  width:190px;
+  height:190px;
+
+  margin:10px auto;
+
+  display:grid;
+  place-items:center;
+
+  background:#fff;
+
+  border-radius:15px;
+}
+
+.qr img{
+  width:174px;
+  height:174px;
+}
+
+.hint{
+  color:var(--muted);
+
+  font-size:11px;
+  line-height:1.45;
+
+  text-align:center;
+}
+
+.bar{
+  height:5px;
+
+  margin-top:8px;
+
+  background:#222;
+
+  border-radius:10px;
+
+  overflow:hidden;
+}
+
+.bar i{
+  display:block;
+
+  width:0;
+  height:100%;
+
+  background:
+    linear-gradient(
+      90deg,
+      var(--blue),
+      var(--purple)
+    );
+
+  transition:width .15s;
+}
+
+input[type=file]{
+  display:none;
+}
+
+#phoneCamera{
+  position:fixed;
+  inset:0;
+
+  width:100%;
+  height:100%;
+
+  object-fit:cover;
+
+  background:#000;
+
+  display:none;
+
+  z-index:1;
+}
+
+.phoneMode #phoneCamera{
+  display:block;
+}
+
+.phoneMode #view{
+  display:none;
+}
+
+.phoneMode .sheet{
+  background:#000b;
+}
+</style>
+</head>
+
+<body>
+
+<div id="view">
+  <canvas id="c"></canvas>
+</div>
+
+<video
+  id="localCamera"
+  class="hidden"
+  autoplay
+  playsinline
+  muted>
+</video>
+
+<video
+  id="remoteCamera"
+  class="hidden"
+  autoplay
+  playsinline>
+</video>
+
+<video
+  id="phoneCamera"
+  autoplay
+  playsinline
+  muted>
+</video>
+
+
+<div class="top">
+
+  <div class="logo">
+    HyperStream
+    <span>FUSION</span>
+  </div>
+
+  <div class="pill">
+    <span id="fps">— FPS</span>
+  </div>
+
+</div>
+
+
+<section class="sheet">
+
+  <div
+    class="status"
+    id="status">
+    Ready · connect a camera or add media
+  </div>
+
+
+  <div class="stats">
+
+    <div class="stat">
+      VR / PC
+      <b id="pcState">OFF</b>
+    </div>
+
+    <div class="stat">
+      iPhone
+      <b id="phoneState">OFF</b>
+    </div>
+
+    <div class="stat">
+      Points
+      <b id="pointCount">0</b>
+    </div>
+
+    <div class="stat">
+      Fusion
+      <b id="fusionPercent">0%</b>
+    </div>
+
+  </div>
+
+
+  <div class="grid2">
+
+    <button
+      class="primary"
+      id="cameraBtn">
+      Connect Camera
+    </button>
+
+    <button
+      class="blue"
+      id="iphoneBtn">
+      Connect iPhone
+    </button>
+
+  </div>
+
+
+  <div
+    class="grid2"
+    style="margin-top:7px">
+
+    <button
+      class="green"
+      id="scanBtn">
+      Start Dual Scan
+    </button>
+
+    <button
+      class="orange"
+      id="buildBtn"
+      disabled>
+      Build Hologram
+    </button>
+
+  </div>
+
+
+  <div
+    class="grid3"
+    style="margin-top:7px">
+
+    <button id="frameBtn">
+      Add Frames
+    </button>
+
+    <button id="videoBtn">
+      Add Videos
+    </button>
+
+    <button id="clearBtn">
+      Clear
+    </button>
+
+  </div>
+
+
+  <!-- IPHONE -->
+
+  <div
+    class="panel"
+    id="iphonePanel">
+
+    <div class="row">
+
+      <b>
+        iPhone Camera
+      </b>
+
+      <span id="pairState">
+        <span class="dot"></span>
+        Waiting
+      </span>
+
+    </div>
+
+
+    <div class="qr">
+      <img
+        id="qrImage"
+        alt="HyperStream QR">
+    </div>
+
+
+    <div class="hint">
+
+      Scan this QR code with the
+      iPhone Camera app.
+
+      The HyperStream camera page
+      opens automatically.
+
+      Allow camera access, then keep
+      the iPhone pointed at the
+      environment.
+
+    </div>
+
+
+    <div class="row">
+
+      <span class="muted">
+        Pairing
+      </span>
+
+      <span id="pairUrl">
+        creating…
+      </span>
+
+    </div>
+
+
+    <button
+      class="blue"
+      id="copyPairBtn">
+      Copy Pairing Link
+    </button>
+
+  </div>
+
+
+  <!-- MEDIA -->
+
+  <div
+    class="panel"
+    id="mediaPanel">
+
+    <div class="row">
+
+      <span>
+        Media sources
+      </span>
+
+      <b id="mediaCount">
+        0
+      </b>
+
+    </div>
+
+    <div class="bar">
+      <i id="progress"></i>
+    </div>
+
+  </div>
+
+
+  <input
+    id="frameInput"
+    type="file"
+    multiple
+    accept="image/*,.json">
+
+  <input
+    id="videoInput"
+    type="file"
+    multiple
+    accept="video/*">
+
+</section>
+
+
+<script
+src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">
+</script>
+
+<script
+src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/js/controls/OrbitControls.js">
+</script>
+
+<script
+src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js">
+</script>
+
+
+<script>
+"use strict";
+
+
+/* =========================================================
+   HYPERSTREAM STATE
+========================================================= */
+
+const $ = id =>
+  document.getElementById(id);
+
+
+const HS = {
+
+  scanning:false,
+  building:false,
+
+  localStream:null,
+  remoteStream:null,
+
+  peer:null,
+  socket:null,
+
+  room:null,
+
+  frames:[],
+  sources:[],
+
+  world:null,
+  glow:null,
+
+  lastSample:0,
+
+  fpsCount:0,
+  fpsTime:0,
+
+  localCanvas:
+    document.createElement("canvas"),
+
+  remoteCanvas:
+    document.createElement("canvas")
+};
+
+
+/* =========================================================
+   THREE.JS
+========================================================= */
+
+let scene;
+let camera;
+let renderer;
+let controls;
+
+
+function createParticleTexture(){
+
+  const canvas =
+    document.createElement("canvas");
+
+  canvas.width=96;
+  canvas.height=96;
+
+  const ctx =
+    canvas.getContext("2d");
+
+  const r=48;
+
+  const gradient =
+    ctx.createRadialGradient(
+      r,r,0,
+      r,r,r
+    );
+
+  gradient.addColorStop(
+    0,
+    "rgba(255,255,255,1)"
+  );
+
+  gradient.addColorStop(
+    .15,
+    "rgba(255,255,255,.9)"
+  );
+
+  gradient.addColorStop(
+    .4,
+    "rgba(255,255,255,.3)"
+  );
+
+  gradient.addColorStop(
+    1,
+    "rgba(255,255,255,0)"
+  );
+
+  ctx.fillStyle=gradient;
+  ctx.fillRect(0,0,96,96);
+
+  return new THREE.CanvasTexture(canvas);
+}
+
+
+const particleTexture =
+  createParticleTexture();
+
+
+function particleMaterial(
+  size,
+  opacity
+){
+
+  return new THREE.PointsMaterial({
+
+    size,
+
+    opacity,
+
+    transparent:true,
+
+    vertexColors:true,
+
+    map:particleTexture,
+
+    blending:
+      THREE.AdditiveBlending,
+
+    depthWrite:false,
+
+    depthTest:true,
+
+    sizeAttenuation:true
+
+  });
+
+}
+
+
+function initThree(){
+
+  scene =
+    new THREE.Scene();
+
+  scene.fog =
+    new THREE.FogExp2(
+      0x000000,
+      .0018
+    );
+
+
+  camera =
+    new THREE.PerspectiveCamera(
+      52,
+      innerWidth / innerHeight,
+      .1,
+      500
+    );
+
+  camera.position.set(
+    0,
+    1.2,
+    8
+  );
+
+
+  renderer =
+    new THREE.WebGLRenderer({
+
+      canvas:$("c"),
+
+      antialias:true,
+
+      powerPreference:
+        "high-performance",
+
+      preserveDrawingBuffer:true
+
+    });
+
+
+  renderer.setPixelRatio(
+    Math.min(
+      devicePixelRatio || 1,
+      1.7
+    )
+  );
+
+
+  renderer.setSize(
+    innerWidth,
+    innerHeight
+  );
+
+
+  controls =
+    new THREE.OrbitControls(
+      camera,
+      renderer.domElement
+    );
+
+
+  controls.enableDamping=true;
+
+  controls.dampingFactor=.07;
+
+  controls.autoRotate=true;
+
+  controls.autoRotateSpeed=.25;
+
+  controls.target.set(
+    0,
+    .25,
+    0
+  );
+
+
+  scene.add(
+    new THREE.AmbientLight(
+      0xffffff,
+      1.35
+    )
+  );
+
+
+  const key =
+    new THREE.DirectionalLight(
+      0xcdeaff,
+      .7
+    );
+
+  key.position.set(
+    3,
+    5,
+    4
+  );
+
+  scene.add(key);
+
+
+  const grid =
+    new THREE.GridHelper(
+      10,
+      20,
+      0x17336b,
+      0x0a0a0e
+    );
+
+  grid.position.y=-1.2;
+
+  grid.material.transparent=true;
+
+  grid.material.opacity=.12;
+
+  scene.add(grid);
+
+
+  addEventListener(
+    "resize",
+    resize
+  );
+
+
+  renderer.setAnimationLoop(
+    renderLoop
+  );
+
+}
+
+
+function resize(){
+
+  camera.aspect =
+    innerWidth / innerHeight;
+
+  camera.updateProjectionMatrix();
+
+  renderer.setSize(
+    innerWidth,
+    innerHeight
+  );
+
+}
+
+
+function renderLoop(time){
+
+  controls.update();
+
+  HS.fpsCount++;
+
+  if(
+    time - HS.fpsTime >
+    1000
+  ){
+
+    $("fps").textContent =
+      Math.round(
+        HS.fpsCount *
+        1000 /
+        (time-HS.fpsTime)
+      ) +
+      " FPS";
+
+    HS.fpsCount=0;
+
+    HS.fpsTime=time;
+
+  }
+
+
+  if(
+    HS.scanning &&
+    performance.now()-HS.lastSample>70
+  ){
+
+    HS.lastSample=
+      performance.now();
+
+    sampleAllSources();
+
+  }
+
+
+  renderer.render(
+    scene,
+    camera
+  );
+
+}
+
+
+/* =========================================================
+   CAMERA
+========================================================= */
+
+async function connectCamera(){
+
+  if(HS.localStream){
+
+    $("status").textContent =
+      "Camera already connected";
+
+    return;
+
+  }
+
+
+  if(
+    !navigator.mediaDevices ||
+    !navigator.mediaDevices.getUserMedia
+  ){
+
+    $("status").textContent =
+      "Camera API unavailable";
+
+    return;
+
+  }
+
+
+  try{
+
+    HS.localStream =
+      await navigator.mediaDevices
+        .getUserMedia({
+
+          video:{
+            facingMode:{
+              ideal:"environment"
+            },
+
+            width:{
+              ideal:1280
+            },
+
+            height:{
+              ideal:720
+            }
+
+          },
+
+          audio:false
+
+        });
+
+
+    const video =
+      $("localCamera");
+
+    video.srcObject =
+      HS.localStream;
+
+    await video.play();
+
+
+    HS.sources.push({
+
+      id:"pc",
+
+      name:"VR / PC",
+
+      video
+
+    });
+
+
+    $("pcState").textContent=
+      "LIVE";
+
+    $("status").textContent=
+      "VR / PC camera connected";
+
+  }
+
+  catch(error){
+
+    console.error(error);
+
+    $("status").textContent=
+      "Camera permission denied";
+
+  }
+
+}
+
+
+/* =========================================================
+   QR PAIRING
+========================================================= */
+
+function createPairLink(){
+
+  const token =
+    (
+      crypto.randomUUID ?
+      crypto.randomUUID() :
+      Date.now().toString(36)+
+      Math.random()
+        .toString(36)
+        .slice(2)
+    );
+
+
+  HS.room=token;
+
+
+  const base =
+    location.href
+      .split("#")[0];
+
+
+  return (
+    base +
+    "#iphone=" +
+    encodeURIComponent(token)
+  );
+
+}
+
+
+function openIphonePairing(){
+
+  $("iphonePanel")
+    .classList.add("show");
+
+
+  const url =
+    createPairLink();
+
+
+  $("pairUrl").textContent =
+    url.length > 52
+      ? url.slice(0,49)+"…"
+      : url;
+
+
+  QRCode.toDataURL(
+    url,
+    {
+      width:174,
+      margin:1
+    },
+    (error,data)=>{
+
+      if(!error)
+        $("qrImage").src=data;
+
+    }
+  );
+
+
+  $("status").textContent =
+    "Scan QR with your iPhone";
+
+
+  /*
+    If a signaling server exists,
+    this is where the WebSocket is
+    initialized.
+
+    Example:
+
+    wss://YOUR-SERVER/room/TOKEN
+
+    The frontend deliberately does
+    not hard-code a server.
+  */
+
+  connectSignalingIfConfigured(
+    HS.room
+  );
+
+}
+
+
+function copyPairingLink(){
+
+  const url =
+    createPairLink();
+
+
+  if(
+    navigator.clipboard
+  ){
+
+    navigator.clipboard
+      .writeText(url)
+      .then(()=>{
+
+        $("status").textContent=
+          "Pairing link copied";
+
+      });
+
+  }
+  else{
+
+    $("status").textContent=
+      url;
+
+  }
+
+}
+
+
+/* =========================================================
+   SIGNALING HOOK
+========================================================= */
+
+const SIGNALING_SERVER =
+  "";
+
+function connectSignalingIfConfigured(
+  room
+){
+
+  if(!SIGNALING_SERVER){
+
+    $("pairState").innerHTML =
+      '<span class="dot"></span>QR ready';
+
+    return;
+
+  }
+
+
+  try{
+
+    HS.socket =
+      new WebSocket(
+        SIGNALING_SERVER
+        + "?room="
+        + encodeURIComponent(room)
+    );
+
+
+    HS.socket.onopen=()=>{
+
+      $("pairState").innerHTML =
+        '<span class="dot on"></span>Connected';
+
+    };
+
+
+    HS.socket.onmessage=
+      async event=>{
+
+        try{
+
+          const msg =
+            JSON.parse(
+              event.data
+            );
+
+          await handleSignal(
+            msg
+          );
+
+        }
+        catch(error){
+
+          console.error(
+            error
+          );
+
+        }
+
+      };
+
+
+    HS.socket.onclose=()=>{
+
+      $("pairState").innerHTML =
+        '<span class="dot"></span>Disconnected';
+
+    };
+
+  }
+  catch(error){
+
+    console.error(error);
+
+  }
+
+}
+
+
+/* =========================================================
+   WEBRTC
+========================================================= */
+
+async function handleSignal(msg){
+
+  if(msg.type==="offer"){
+
+    await createPeer();
+
+    await HS.peer
+      .setRemoteDescription(
+        msg.offer
+      );
+
+
+    const answer =
+      await HS.peer
+        .createAnswer();
+
+
+    await HS.peer
+      .setLocalDescription(
+        answer
+      );
+
+
+    sendSignal({
+
+      type:"answer",
+
+      answer
+
+    });
+
+  }
+
+
+  else if(
+    msg.type==="answer"
+  ){
+
+    if(HS.peer){
+
+      await HS.peer
+        .setRemoteDescription(
+          msg.answer
+        );
+
+    }
+
+  }
+
+
+  else if(
+    msg.type==="candidate"
+  ){
+
+    if(HS.peer){
+
+      try{
+
+        await HS.peer
+          .addIceCandidate(
+            msg.candidate
+          );
+
+      }
+      catch(error){
+
+        console.warn(error);
+
+      }
+
+    }
+
+  }
+
+}
+
+
+function sendSignal(message){
+
+  if(
+    HS.socket &&
+    HS.socket.readyState===1
+  ){
+
+    HS.socket.send(
+      JSON.stringify(message)
+    );
+
+  }
+
+}
+
+
+async function createPeer(){
+
+  if(HS.peer)
+    return;
+
+
+  HS.peer =
+    new RTCPeerConnection({
+
+      iceServers:[
+
+        {
+          urls:
+          "stun:stun.l.google.com:19302"
+        }
+
+      ]
+
+    });
+
+
+  HS.peer.onicecandidate =
+    event=>{
+
+      if(
+        event.candidate
+      ){
+
+        sendSignal({
+
+          type:"candidate",
+
+          candidate:
+            event.candidate
+
+        });
+
+      }
+
+    };
+
+
+  HS.peer.ontrack =
+    event=>{
+
+      const stream =
+        event.streams[0];
+
+      HS.remoteStream =
+        stream;
+
+      $("remoteCamera")
+        .srcObject=stream;
+
+      $("remoteCamera")
+        .play()
+        .catch(()=>{});
+
+
+      HS.sources.push({
+
+        id:"iphone",
+
+        name:"iPhone",
+
+        video:
+          $("remoteCamera")
+
+      });
+
+
+      $("phoneState")
+        .textContent="LIVE";
+
+
+      $("status").textContent=
+        "iPhone connected · dual camera ready";
+
+    };
+
+}
+
+
+/* =========================================================
+   IPHONE CAMERA MODE
+========================================================= */
+
+async function initializeIphoneMode(){
+
+  const params =
+    new URLSearchParams(
+      location.hash.slice(1)
+    );
+
+
+  if(
+    !params.has("iphone")
+  )
+    return;
+
+
+  document.body
+    .classList.add("phoneMode");
+
+
+  $("status").textContent =
+    "HyperStream iPhone Camera";
+
+
+  $("cameraBtn").textContent =
+    "Start iPhone Camera";
+
+
+  $("iphoneBtn").style.display=
+    "none";
+
+
+  $("buildBtn").style.display=
+    "none";
+
+
+  $("frameBtn").style.display=
+    "none";
+
+
+  $("videoBtn").style.display=
+    "none";
+
+
+  $("clearBtn").style.display=
+    "none";
+
+
+  $("scanBtn").textContent=
+    "Send Camera";
+
+
+  $("cameraBtn").onclick =
+    startIphoneCamera;
+
+
+  $("scanBtn").onclick =
+    startIphoneCamera;
+
+
+  /*
+    The QR token is retained so
+    the signaling server can use
+    it to place this phone into
+    the same room.
+  */
+
+  HS.room =
+    params.get("iphone");
+
+
+  connectSignalingIfConfigured(
+    HS.room
+  );
+
+}
+
+
+async function startIphoneCamera(){
+
+  try{
+
+    const stream =
+      await navigator.mediaDevices
+        .getUserMedia({
+
+          video:{
+            facingMode:{
+              ideal:"environment"
+            },
+
+            width:{
+              ideal:1920
+            },
+
+            height:{
+              ideal:1080
+            }
+
+          },
+
+          audio:false
+
+        });
+
+
+    $("phoneCamera")
+      .srcObject=stream;
+
+
+    await $("phoneCamera")
+      .play();
+
+
+    HS.localStream =
+      stream;
+
+
+    $("phoneState")
+      .textContent="LIVE";
+
+
+    $("status").textContent=
+      "iPhone camera live";
+
+
+    /*
+      With the signaling server
+      enabled, add the local tracks
+      to WebRTC.
+    */
+
+    await createPeer();
+
+
+    for(
+      const track of
+      stream.getTracks()
+    ){
+
+      HS.peer.addTrack(
+        track,
+        stream
+      );
+
+    }
+
+
+    if(HS.socket){
+
+      const offer =
+        await HS.peer
+          .createOffer();
+
+
+      await HS.peer
+        .setLocalDescription(
+          offer
+        );
+
+
+      sendSignal({
+
+        type:"offer",
+
+        offer
+
+      });
+
+    }
+
+  }
+  catch(error){
+
+    console.error(error);
+
+    $("status").textContent =
+      "Allow camera access on iPhone";
+
+  }
+
+}
+
+
+/* =========================================================
+   SOURCE SAMPLING
+========================================================= */
+
+function sampleAllSources(){
+
+  for(
+    const source
+    of HS.sources
+  ){
+
+    const video =
+      source.video;
+
+
+    if(
+      !video ||
+      video.readyState<2
+    )
+      continue;
+
+
+    const width=240;
+
+    const ratio =
+      video.videoHeight /
+      Math.max(
+        1,
+        video.videoWidth
+      );
+
+
+    const height =
+      Math.max(
+        120,
+        Math.round(
+          width*ratio
+        )
+      );
+
+
+    const canvas =
+      document.createElement(
+        "canvas"
+      );
+
+
+    canvas.width=width;
+    canvas.height=height;
+
+
+    const ctx =
+      canvas.getContext(
+        "2d",
+        {
+          willReadFrequently:true
+        }
+      );
+
+
+    try{
+
+      ctx.drawImage(
+        video,
+        0,
+        0,
+        width,
+        height
+      );
+
+    }
+    catch(error){
+
+      continue;
+
+    }
+
+
+    HS.frames.push({
+
+      canvas,
+
+      source:source.name,
+
+      time:performance.now()
+
+    });
+
+  }
+
+
+  /*
+    Keep a rolling capture buffer.
+  */
+
+  if(
+    HS.frames.length>180
+  ){
+
+    HS.frames.splice(
+      0,
+      HS.frames.length-180
+    );
+
+  }
+
+
+  $("mediaCount").textContent =
+    HS.frames.length;
+
+
+  $("buildBtn").disabled =
+    HS.frames.length<2;
+
+
+  const sources =
+    new Set(
+      HS.frames.map(
+        frame=>frame.source
+      )
+    );
+
+
+  if(
+    sources.size>=2
+  ){
+
+    $("fusionPercent")
+      .textContent="100%";
+
+  }
+  else if(
+    sources.size===1
+  ){
+
+    $("fusionPercent")
+      .textContent="50%";
+
+  }
+
+}
+
+
+/* =========================================================
+   IMAGE UPLOAD
+========================================================= */
+
+async function imageToCanvas(
+  file
+){
+
+  return new Promise(
+    (resolve,reject)=>{
+
+      const url =
+        URL.createObjectURL(
+          file
+        );
+
+
+      const image =
+        new Image();
+
+
+      image.onload=()=>{
+
+        const max=620;
+
+        const scale =
+          Math.min(
+            1,
+            max /
+            Math.max(
+              image.width,
+              1
+            )
+          );
+
+
+        const canvas =
+          document.createElement(
+            "canvas"
+          );
+
+
+        canvas.width =
+          Math.max(
+            64,
+            Math.round(
+              image.width*scale
+            )
+          );
+
+
+        canvas.height =
+          Math.max(
+            64,
+            Math.round(
+              image.height*scale
+            )
+          );
+
+
+        canvas
+          .getContext("2d")
+          .drawImage(
+            image,
+            0,
+            0,
+            canvas.width,
+            canvas.height
+          );
+
+
+        URL.revokeObjectURL(
+          url
+        );
+
+
+        resolve(canvas);
+
+      };
+
+
+      image.onerror=reject;
+
+      image.src=url;
+
+    }
+  );
+
+}
+
+
+async function addImageFiles(
+  files
+){
+
+  $("mediaPanel")
+    .classList.add("show");
+
+
+  let added=0;
+
+
+  for(
+    const file
+    of files
+  ){
+
+    try{
+
+      const canvas =
+        await imageToCanvas(
+          file
+        );
+
+
+      HS.frames.push({
+
+        canvas,
+
+        source:"uploaded frame",
+
+        time:performance.now()
+
+      });
+
+
+      added++;
+
+    }
+    catch(error){
+
+      console.error(error);
+
+    }
+
+  }
+
+
+  $("mediaCount")
+    .textContent=
+    HS.frames.length;
+
+
+  $("buildBtn")
+    .disabled=
+    HS.frames.length<2;
+
+
+  $("progress")
+    .style.width="100%";
+
+
+  $("status").textContent =
+    added+
+    " frame(s) added";
+
+}
+
+
+/* =========================================================
+   VIDEO IMPORT
+========================================================= */
+
+async function addVideoFile(
+  file
+){
+
+  return new Promise(
+    resolve=>{
+
+      const url =
+        URL.createObjectURL(
+          file
+        );
+
+
+      const video =
+        document.createElement(
+          "video"
+        );
+
+
+      video.muted=true;
+      video.playsInline=true;
+
+
+      video.onloadedmetadata =
+        async()=>{
+
+          const width=320;
+
+          const height =
+            Math.max(
+              120,
+              Math.round(
+                width *
+                (
+                  video.videoHeight /
+                  Math.max(
+                    1,
+                    video.videoWidth
+                  )
+                )
+              )
+            );
+
+
+          const duration =
+            Math.min(
+              video.duration,
+              30
+            );
+
+
+          const interval=.4;
+
+          let added=0;
+
+
+          for(
+            let time=0;
+            time<duration;
+            time+=interval
+          ){
+
+            video.currentTime=time;
+
+
+            await new Promise(
+              resolveSeek=>{
+
+                video.onseeked =
+                  resolveSeek;
+
+              }
+            );
+
+
+            const canvas =
+              document.createElement(
+                "canvas"
+              );
+
+
+            canvas.width=width;
+            canvas.height=height;
+
+
+            canvas
+              .getContext("2d")
+              .drawImage(
+                video,
+                0,
+                0,
+                width,
+                height
+              );
+
+
+            HS.frames.push({
+
+              canvas,
+
+              source:"video",
+
+              time
+
+            });
+
+
+            added++;
+
+
+            const percent =
+              Math.min(
+                100,
+                Math.round(
+                  time /
+                  Math.max(
+                    duration,
+                    .01
+                  ) *
+                  100
+                )
+              );
+
+
+            $("progress")
+              .style.width=
+              percent+"%";
+
+          }
+
+
+          URL.revokeObjectURL(
+            url
+          );
+
+
+          resolve(added);
+
+        };
+
+
+      video.src=url;
+
+    }
+  );
+
+}
+
+
+async function addVideoFiles(
+  files
+){
+
+  $("mediaPanel")
+    .classList.add("show");
+
+
+  $("status").textContent =
+    "Extracting video frames…";
+
+
+  let total=0;
+
+
+  for(
+    const file
+    of files
+  ){
+
+    try{
+
+      total +=
+        await addVideoFile(
+          file
+        );
+
+    }
+    catch(error){
+
+      console.error(error);
+
+    }
+
+  }
+
+
+  $("mediaCount")
+    .textContent=
+    HS.frames.length;
+
+
+  $("buildBtn")
+    .disabled=
+    HS.frames.length<2;
+
+
+  $("progress")
+    .style.width="100%";
+
+
+  $("status").textContent =
+    total+
+    " video frames added";
+
+}
+
+
+/* =========================================================
+   POINT-CLOUD CONVERSION
+========================================================= */
+
+function imageToPoints(
+  canvas,
+  offset
+){
+
+  const ctx =
+    canvas.getContext(
+      "2d",
+      {
+        willReadFrequently:true
+      }
+    );
+
+
+  const width =
+    canvas.width;
+
+  const height =
+    canvas.height;
+
+
+  const pixels =
+    ctx.getImageData(
+      0,
+      0,
+      width,
+      height
+    ).data;
+
+
+  const points=[];
+
+
+  const step =
+    Math.max(
+      2,
+      Math.floor(
+        Math.min(
+          width,
+          height
+        ) / 105
+      )
+    );
+
+
+  for(
+    let y=0;
+    y<height;
+    y+=step
+  ){
+
+    for(
+      let x=0;
+      x<width;
+      x+=step
+    ){
+
+      const index =
+        (y*width+x)*4;
+
+
+      const r =
+        pixels[index]/255;
+
+      const g =
+        pixels[index+1]/255;
+
+      const b =
+        pixels[index+2]/255;
+
+
+      const luminance =
+        .299*r+
+        .587*g+
+        .114*b;
+
+
+      if(
+        luminance<.025 ||
+        luminance>.985
+      )
+        continue;
+
+
+      /*
+        Simple visual-depth estimate.
+
+        This is NOT metric camera depth.
+        It creates a useful volumetric
+        representation from ordinary
+        RGB frames.
+      */
+
+      const left =
+        x>0
+        ? pixels[index-4]/255
+        : luminance;
+
+
+      const right =
+        x<width-1
+        ? pixels[index+4]/255
+        : luminance;
+
+
+      const up =
+        y>0
+        ? pixels[
+            index-width*4
+          ]/255
+        : luminance;
+
+
+      const down =
+        y<height-1
+        ? pixels[
+            index+width*4
+          ]/255
+        : luminance;
+
+
+      const edge =
+        Math.min(
+          1,
+          (
+            Math.abs(
+              left-right
+            )+
+            Math.abs(
+              up-down
+            )
+          )*3
+        );
+
+
+      if(
+        edge<.04 &&
+        Math.random()>.45
+      )
+        continue;
+
+
+      const depth =
+        (1-luminance)*.52+
+        edge*1.05;
+
+
+      points.push(
+
+        (
+          x/width-.5
+        )*4.25+
+        offset.x,
+
+        (
+          .5-y/height
+        )*3.1+
+        offset.y,
+
+        (
+          depth-.27
+        )*7+
+        offset.z,
+
+        r,
+        g,
+        b
+
+      );
+
+    }
+
+  }
+
+
+  return points;
+
+}
+
+
+/* =========================================================
+   FUSION ENGINE
+========================================================= */
+
+async function buildHologram(){
+
+  if(
+    HS.building ||
+    HS.frames.length<2
+  )
+    return;
+
+
+  HS.building=true;
+
+
+  $("buildBtn")
+    .disabled=true;
+
+
+  $("status").textContent =
+    "Fusing all cameras, frames and videos…";
+
+
+  $("progress")
+    .style.width="5%";
+
+
+  /*
+    We intentionally combine all
+    source types into the same world
+    coordinate buffer.
+
+    When real camera calibration /
+    SLAM is added later, these offsets
+    become actual camera poses.
+  */
+
+  const frames =
+    HS.frames.slice(-180);
+
+
+  const output=[];
+
+
+  const sourceNames =
+    [
+      ...new Set(
+        frames.map(
+          frame=>frame.source
+        )
+      )
+    ];
+
+
+  for(
+    let i=0;
+    i<frames.length;
+    i++
+  ){
+
+    const frame =
+      frames[i];
+
+
+    let offset={
+
+      x:0,
+      y:0,
+      z:0
+
+    };
+
+
+    /*
+      Source-aware alignment.
+
+      These are conservative offsets,
+      preventing the two cameras from
+      becoming two giant disconnected
+      copies of the same scene.
+    */
+
+    if(
+      /iphone/i.test(
+        frame.source
+      )
+    ){
+
+      offset={
+        x:.28,
+        y:0,
+        z:-.15
+      };
+
+    }
+
+
+    if(
+      /vr|pc/i.test(
+        frame.source
+      )
+    ){
+
+      offset={
+        x:-.18,
+        y:0,
+        z:.08
+      };
+
+    }
+
+
+    if(
+      /video/i.test(
+        frame.source
+      )
+    ){
+
+      offset={
+        x:0,
+        y:0,
+        z:.1
+      };
+
+    }
+
+
+    const points =
+      imageToPoints(
+        frame.canvas,
+        offset
+      );
+
+
+    for(
+      let j=0;
+      j<points.length;
+      j+=6
+    ){
+
+      output.push(
+
+        points[j]+
+        (Math.random()-.5)*.012,
+
+        points[j+1]+
+        (Math.random()-.5)*.012,
+
+        points[j+2]+
+        (Math.random()-.5)*.012,
+
+        points[j+3],
+
+        points[j+4],
+
+        points[j+5]
+
+      );
+
+    }
+
+
+    if(
+      output.length/6 >
+      160000
+    )
+      break;
+
+
+    if(
+      i%4===0
+    ){
+
+      $("progress")
+        .style.width=
+        (
+          5+
+          (i/
+           frames.length)*
+          90
+        )+"%";
+
+
+      await new Promise(
+        requestAnimationFrame
+      );
+
+    }
+
+  }
+
+
+  showHologram(
+    output,
+    sourceNames
+  );
+
+
+  HS.building=false;
+
+
+  $("buildBtn")
+    .disabled=false;
+
+
+  $("progress")
+    .style.width="100%";
+
+}
+
+
+/* =========================================================
+   DISPLAY HOLOGRAM
+========================================================= */
+
+function showHologram(
+  data,
+  sources
+){
+
+  if(
+    HS.world
+  ){
+
+    scene.remove(
+      HS.world
+    );
+
+    scene.remove(
+      HS.glow
+    );
+
+    HS.world.geometry.dispose();
+    HS.glow.geometry.dispose();
+
+  }
+
+
+  const count =
+    Math.floor(
+      data.length/6
+    );
+
+
+  const positions =
+    new Float32Array(
+      count*3
+    );
+
+
+  const colors =
+    new Float32Array(
+      count*3
+    );
+
+
+  for(
+    let i=0;
+    i<count;
+    i++
+  ){
+
+    const source =
+      i*6;
+
+    const target =
+      i*3;
+
+
+    positions[target] =
+      data[source];
+
+    positions[target+1] =
+      data[source+1];
+
+    positions[target+2] =
+      data[source+2];
+
+
+    colors[target] =
+      data[source+3];
+
+    colors[target+1] =
+      data[source+4];
+
+    colors[target+2] =
+      data[source+5];
+
+  }
+
+
+  const geometry =
+    new THREE.BufferGeometry();
+
+
+  geometry.setAttribute(
+    "position",
+    new THREE.BufferAttribute(
+      positions,
+      3
+    )
+  );
+
+
+  geometry.setAttribute(
+    "color",
+    new THREE.BufferAttribute(
+      colors,
+      3
+    )
+  );
+
+
+  HS.world =
+    new THREE.Points(
+      geometry,
+      particleMaterial(
+        .052,
+        .96
+      )
+    );
+
+
+  HS.glow =
+    new THREE.Points(
+      geometry.clone(),
+      particleMaterial(
+        .14,
+        .18
+      )
+    );
+
+
+  scene.add(
+    HS.world,
+    HS.glow
+  );
+
+
+  $("pointCount")
+    .textContent=
+    count.toLocaleString();
+
+
+  $("fusionPercent")
+    .textContent=
+    sources.length>=2
+      ? "100%"
+      : "50%";
+
+
+  $("status").textContent =
+    "ONE fused hologram · "+
+    count.toLocaleString()+
+    " points";
+
+
+  geometry.computeBoundingSphere();
+
+
+  const radius =
+    Math.max(
+      2,
+      geometry.boundingSphere
+        ? geometry.boundingSphere.radius
+        : 2
+    );
+
+
+  camera.position.set(
+    0,
+    .8,
+    Math.max(
+      6,
+      radius*2.25
+    )
+  );
+
+
+  controls.target.set(
+    0,
+    .25,
+    0
+  );
+
+
+  controls.autoRotate=true;
+
+  controls.autoRotateSpeed=.3;
+
+  controls.update();
+
+}
+
+
+/* =========================================================
+   CLEAR
+========================================================= */
+
+function clearAll(){
+
+  HS.frames=[];
+
+  HS.sources=[];
+
+
+  $("mediaCount")
+    .textContent="0";
+
+
+  $("pointCount")
+    .textContent="0";
+
+
+  $("fusionPercent")
+    .textContent="0%";
+
+
+  $("buildBtn")
+    .disabled=true;
+
+
+  if(
+    HS.world
+  ){
+
+    scene.remove(
+      HS.world
+    );
+
+    scene.remove(
+      HS.glow
+    );
+
+    HS.world.geometry.dispose();
+    HS.glow.geometry.dispose();
+
+    HS.world=null;
+    HS.glow=null;
+
+  }
+
+
+  $("status").textContent =
+    "Cleared";
+
+}
+
+
+/* =========================================================
+   SCAN
+========================================================= */
+
+function toggleScan(){
+
+  HS.scanning=
+    !HS.scanning;
+
+
+  $("scanBtn")
+    .textContent=
+    HS.scanning
+      ? "Stop Dual Scan"
+      : "Start Dual Scan";
+
+
+  $("scanBtn")
+    .className=
+    HS.scanning
+      ? "red"
+      : "green";
+
+
+  controls.autoRotate =
+    !HS.scanning;
+
+
+  $("status").textContent =
+    HS.scanning
+      ? "Capturing camera sources…"
+      : "Scan paused";
+
+}
+
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+$("cameraBtn")
+  .onclick=
+  connectCamera;
+
+
+$("iphoneBtn")
+  .onclick=
+  openIphonePairing;
+
+
+$("copyPairBtn")
+  .onclick=
+  copyPairingLink;
+
+
+$("scanBtn")
+  .onclick=
+  toggleScan;
+
+
+$("buildBtn")
+  .onclick=
+  buildHologram;
+
+
+$("clearBtn")
+  .onclick=
+  clearAll;
+
+
+$("frameBtn")
+  .onclick=
+  ()=>$("frameInput").click();
+
+
+$("videoBtn")
+  .onclick=
+  ()=>$("videoInput").click();
+
+
+$("frameInput")
+  .onchange=
+  event=>{
+
+    addImageFiles(
+      [...event.target.files]
+    );
+
+    event.target.value="";
+
+  };
+
+
+$("videoInput")
+  .onchange=
+  event=>{
+
+    addVideoFiles(
+      [...event.target.files]
+    );
+
+    event.target.value="";
+
+  };
+
+
+/* =========================================================
+   START
+========================================================= */
+
+initThree();
+
+initializeIphoneMode();
+
+</script>
+
+</body>
+</html>
