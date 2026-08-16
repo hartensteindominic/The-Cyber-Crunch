@@ -1,157 +1,5944 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>HyperStream XD • Engine v4.4</title>
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1,maximum-scale=1,
+           user-scalable=no,viewport-fit=cover"
+>
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<title>HyperStream XR</title>
+
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:#020617;color:#f8fafc;font-family:system-ui,sans-serif;height:100vh;display:flex;overflow:hidden}
-#sidebar{width:380px;background:#030712;border-right:1px solid #1e293b;padding:12px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;z-index:10}
-.card{background:#0f172a;border:1px solid #334155;border-radius:8px;padding:8px;display:flex;flex-direction:column;gap:6px}
-.title{font-size:9px;font-weight:800;text-transform:uppercase;color:#94a3b8}
-.row{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#cbd5e1}
-button{border:none;border-radius:6px;padding:7px;font-size:10px;font-weight:800;cursor:pointer;color:#fff}
-.btn-p{background:linear-gradient(135deg,#8b5cf6,#ec4899)}
-.btn-d{background:#ef4444;width:100%}.btn-d.on{background:#f97316}
-input[type=range]{accent-color:#ec4899;width:100px}
-#viewer{flex:1;position:relative}
-canvas{display:block;width:100%;height:100%}
-.stats{position:absolute;top:10px;right:10px;background:rgba(2,6,23,0.8);padding:6px 10px;border-radius:6px;font-size:10px;color:#94a3b8;z-index:5}
-video{display:none}
-</style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-</head>
-<body>
-<div id="sidebar">
-  <div style="font-size:12px;font-weight:900;color:#38bdf8">HYPERSTREAM XD • v4.4</div>
-  <div class="card">
-    <div class="title">Live Matrix Control</div>
-    <button class="btn-d" id="scanBtn" onclick="toggleScan()">ACTIVATE UNLIMITED SCAN</button>
-    <div class="row"><span>Voxel Step</span><input type="range" min="1" max="4" value="1" oninput="stepSize=+this.value"></div>
-    <div class="row"><span>Depth Field</span><input type="range" min="10" max="150" value="90" oninput="depthMul=+this.value"></div>
-    <div class="row"><span>Active Voxels</span><b id="nLive" style="color:#ec4899">0</b></div>
-    <button class="btn-p" onclick="expJSON()">Export JSON Matrix</button>
-  </div>
-</div>
-<div id="viewer">
-  <div class="stats">FPS <b id="fpsD" style="color:#ec4899">—</b></div>
-  <video id="vid" autoplay playsinline muted></video>
-  <canvas id="c3"></canvas>
-</div>
-<script>
-const $=id=>document.getElementById(id);
-let scene,cam,ren,ctrl,video,c2d,ctx,stream=null,ready=false,scanning=false;
-let stepSize=1,depthMul=90,layers=[],rec=[],fc=0,ft=0,phase=0;
-
-window.addEventListener('DOMContentLoaded',()=>{
-  init3();
-  initCam();
-});
-
-function init3(){
-  const box=$('viewer');
-  scene=new THREE.Scene();
-  scene.fog=new THREE.FogExp2(0x020617,0.01);
-  cam=new THREE.PerspectiveCamera(48,box.clientWidth/box.clientHeight,0.05,2000);
-  cam.position.set(0,0.5,3.8);
-
-  ren=new THREE.WebGLRenderer({canvas:$('c3'),antialias:true,powerPreference:'high-performance'});
-  ren.setSize(box.clientWidth,box.clientHeight);
-  ren.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
-  ren.setClearColor(0x020617);
-
-  ctrl=new THREE.OrbitControls(cam,ren.domElement);
-  ctrl.enableDamping=true;ctrl.autoRotate=true;
-
-  scene.add(new THREE.AmbientLight(0xffffff,1.2));
-  window.addEventListener('resize',()=>{
-    cam.aspect=box.clientWidth/box.clientHeight;
-    cam.updateProjectionMatrix();
-    ren.setSize(box.clientWidth,box.clientHeight);
-  });
-  ren.setAnimationLoop(loop);
+:root{
+  --bg:#000;
+  --glass:rgba(18,18,20,.90);
+  --glass2:rgba(8,8,10,.72);
+  --line:rgba(255,255,255,.11);
+  --text:#f5f5f7;
+  --muted:#8e8e93;
+  --purple:#bf5af2;
+  --pink:#ff375f;
+  --green:#30d158;
+  --blue:#0a84ff;
+  --cyan:#64d2ff;
+  --orange:#ff9f0a;
+  --yellow:#ffd60a;
+  --red:#ff453a;
+  --st:env(safe-area-inset-top,0px);
+  --sb:env(safe-area-inset-bottom,0px);
 }
 
-function initCam(){
-  video=$('vid');
-  c2d=document.createElement('canvas');
-  ctx=c2d.getContext('2d',{willReadFrequently:true});
-  navigator.mediaDevices?.getUserMedia({video:{width:{ideal:640},height:{ideal:480},frameRate:{ideal:30}},audio:false})
-  .then(s=>{stream=s;video.srcObject=s;return video.play();})
-  .then(()=>{ready=true;})
-  .catch(()=>{/* Fallback simulated telemetry node if sensor blocked */});
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
 }
 
-function loop(now){
-  ctrl.update();
-  phase=now*0.001;
-  fc++;
-  if(now-ft>1000){$('fpsD').textContent=Math.round(fc*1000/(now-ft));fc=0;ft=now;}
-  if(ready&&video.readyState>=2)sample();
-  ren.render(scene,cam);
+html,
+body{
+  width:100%;
+  height:100%;
+  height:100dvh;
+  overflow:hidden;
+  background:#000;
+  color:var(--text);
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Text",
+    "SF Pro Display",
+    system-ui,
+    sans-serif;
+  -webkit-font-smoothing:antialiased;
 }
 
-function sample(){
-  const w=video.videoWidth||640,h=video.videoHeight||480;
-  if(c2d.width!==w||c2d.height!==h){c2d.width=w;c2d.height=h;}
-  try{ctx.drawImage(video,0,0,w,h);}catch{return;}
-  let pix;
-  try{pix=ctx.getImageData(0,0,w,h).data;}catch{return;}
+body{
+  overscroll-behavior:none;
+}
 
-  const pos=[],col=[];
-  const cx=w*0.5,cy=h*0.5,maxR=Math.hypot(cx,cy)||1;
-  const sx=1.6,sy=1.6,step=Math.max(1,stepSize|0);
+#view{
+  position:fixed;
+  inset:0;
+  background:#000;
+}
 
-  for(let y=0;y<h;y+=step){
-    for(let x=0;x<w;x+=step){
-      const i=(y*w+x)*4;
-      const r=pix[i]/255,g=pix[i+1]/255,b=pix[i+2]/255;
-      if((0.299*r+0.587*g+0.114*b)<0.02)continue;
+#c{
+  width:100%;
+  height:100%;
+  display:block;
+  touch-action:none;
+}
 
-      const nx=((w-x)/w)*2-1,ny=-((y/h)*2-1);
-      const nz=((1.0-(0.299*r+0.587*g+0.114*b))-0.5)*(depthMul*0.04);
+#remoteVideo,
+#localVideo{
+  position:fixed;
+  width:1px;
+  height:1px;
+  opacity:0;
+  pointer-events:none;
+  object-fit:cover;
+}
 
-      pos.push(nx*sx,ny*sy,nz);
-      col.push(r,g,b);
-    }
+.hidden{
+  display:none!important;
+}
+
+/* -------------------------------------------------------
+   TOP BAR
+------------------------------------------------------- */
+
+.top{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  z-index:50;
+  padding:
+    calc(12px + var(--st))
+    15px
+    8px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  pointer-events:none;
+}
+
+.logo{
+  font-size:17px;
+  font-weight:750;
+  letter-spacing:-.35px;
+  pointer-events:auto;
+  text-shadow:0 2px 12px rgba(0,0,0,.7);
+}
+
+.logo span{
+  opacity:.42;
+  font-size:11px;
+  font-weight:600;
+  margin-left:5px;
+}
+
+.pill{
+  pointer-events:auto;
+  display:flex;
+  gap:7px;
+  align-items:center;
+  background:rgba(0,0,0,.55);
+  border:1px solid rgba(255,255,255,.08);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  border-radius:20px;
+  padding:7px 11px;
+  font-size:11px;
+  font-weight:650;
+}
+
+.recdot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:var(--red);
+  display:none;
+  box-shadow:0 0 10px rgba(255,69,58,.8);
+}
+
+.recdot.on{
+  display:block;
+  animation:blink 1s infinite;
+}
+
+@keyframes blink{
+  50%{
+    opacity:.25;
+  }
+}
+
+/* -------------------------------------------------------
+   CONNECTION INDICATOR
+------------------------------------------------------- */
+
+.connection{
+  position:fixed;
+  top:calc(50px + var(--st));
+  left:50%;
+  transform:translateX(-50%);
+  z-index:45;
+
+  display:none;
+  align-items:center;
+  gap:7px;
+
+  padding:6px 10px;
+  border-radius:16px;
+
+  background:rgba(0,0,0,.52);
+  border:1px solid rgba(255,255,255,.08);
+
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+
+  font-size:10px;
+  color:var(--muted);
+}
+
+.connection.show{
+  display:flex;
+}
+
+.connectionDot{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:var(--muted);
+}
+
+.connectionDot.connected{
+  background:var(--green);
+  box-shadow:0 0 9px rgba(48,209,88,.8);
+}
+
+.connectionDot.waiting{
+  background:var(--orange);
+  animation:blink 1s infinite;
+}
+
+/* -------------------------------------------------------
+   BOTTOM SHEET
+------------------------------------------------------- */
+
+.sheet{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:40;
+
+  background:var(--glass);
+
+  border-top:1px solid var(--line);
+
+  backdrop-filter:blur(40px);
+  -webkit-backdrop-filter:blur(40px);
+
+  padding:
+    11px
+    13px
+    calc(13px + var(--sb));
+
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+
+.status{
+  font-size:12px;
+  color:var(--blue);
+  min-height:17px;
+  text-align:center;
+  font-weight:550;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.meta{
+  display:flex;
+  justify-content:space-between;
+  font-size:10px;
+  color:var(--muted);
+  padding:0 4px;
+}
+
+.meta b{
+  color:var(--text);
+  font-weight:650;
+}
+
+.g2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+}
+
+.g3{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:7px;
+}
+
+button{
+  border:0;
+  border-radius:13px;
+  padding:13px 9px;
+
+  font-size:14px;
+  font-weight:650;
+
+  color:#fff;
+  width:100%;
+
+  font-family:inherit;
+
+  -webkit-appearance:none;
+
+  transition:
+    transform .1s,
+    opacity .15s,
+    filter .15s;
+}
+
+button:active{
+  transform:scale(.97);
+}
+
+button:hover{
+  filter:brightness(1.07);
+}
+
+button:disabled{
+  opacity:.3;
+  pointer-events:none;
+}
+
+.main{
+  background:
+    linear-gradient(
+      135deg,
+      var(--purple),
+      var(--pink)
+    );
+}
+
+.green{
+  background:var(--green);
+  color:#000;
+}
+
+.red{
+  background:var(--pink);
+}
+
+.blue{
+  background:var(--blue);
+}
+
+.orange{
+  background:var(--orange);
+  color:#000;
+}
+
+.cyan{
+  background:var(--cyan);
+  color:#000;
+}
+
+.dim{
+  background:#2c2c2e;
+}
+
+.darkBlue{
+  background:#12345a;
+}
+
+/* -------------------------------------------------------
+   CONNECTION PANEL
+------------------------------------------------------- */
+
+#connectPanel{
+  position:fixed;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+
+  z-index:100;
+
+  width:min(92vw,420px);
+
+  display:none;
+
+  padding:18px;
+
+  background:rgba(22,22,24,.96);
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:22px;
+
+  box-shadow:
+    0 20px 70px rgba(0,0,0,.7);
+
+  backdrop-filter:blur(30px);
+  -webkit-backdrop-filter:blur(30px);
+}
+
+#connectPanel.show{
+  display:block;
+}
+
+.panelTitle{
+  font-size:18px;
+  font-weight:750;
+  margin-bottom:5px;
+}
+
+.panelSub{
+  font-size:12px;
+  line-height:1.45;
+  color:var(--muted);
+  margin-bottom:15px;
+}
+
+.field{
+  width:100%;
+  padding:12px 13px;
+  margin-bottom:9px;
+
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.1);
+
+  background:#111113;
+  color:#fff;
+
+  outline:none;
+
+  font:inherit;
+  font-size:13px;
+}
+
+.field:focus{
+  border-color:rgba(10,132,255,.65);
+}
+
+.panelButtons{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.closeBtn{
+  margin-top:8px;
+  background:#2c2c2e;
+}
+
+/* -------------------------------------------------------
+   VR BUTTON
+------------------------------------------------------- */
+
+#vrButton{
+  position:fixed;
+  top:calc(74px + var(--st));
+  right:15px;
+  z-index:45;
+
+  display:none;
+
+  width:auto;
+
+  padding:8px 12px;
+
+  border-radius:18px;
+
+  background:rgba(0,0,0,.6);
+  border:1px solid rgba(255,255,255,.12);
+
+  font-size:11px;
+}
+
+/* -------------------------------------------------------
+   CAMERA PREVIEW
+------------------------------------------------------- */
+
+#preview{
+  position:fixed;
+  top:calc(82px + var(--st));
+  right:14px;
+
+  width:96px;
+  height:128px;
+
+  z-index:30;
+
+  display:none;
+
+  object-fit:cover;
+
+  border-radius:12px;
+
+  border:1px solid rgba(255,255,255,.13);
+
+  background:#050505;
+
+  opacity:.82;
+
+  box-shadow:
+    0 8px 30px rgba(0,0,0,.4);
+}
+
+/* -------------------------------------------------------
+   SMALL DESKTOP ADJUSTMENT
+------------------------------------------------------- */
+
+@media(min-width:700px){
+  .sheet{
+    left:50%;
+    right:auto;
+    width:430px;
+    transform:translateX(-50%);
+    border-left:1px solid var(--line);
+    border-right:1px solid var(--line);
+    border-radius:18px 18px 0 0;
   }
 
-  $('nLive').textContent=(pos.length/3).toLocaleString();
-  buildCloud(pos,col);
+  #preview{
+    width:160px;
+    height:120px;
+  }
 }
 
-function buildCloud(pos,col){
-  while(layers.length){const o=layers.pop();scene.remove(o);o.geometry.dispose();o.material.dispose();}
-  const g=new THREE.BufferGeometry();
-  g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
-  g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
+/* -------------------------------------------------------
+   FILE
+------------------------------------------------------- */
 
-  const mat=new THREE.PointsMaterial({
-    size:0.015,
+#file{
+  display:none;
+}
+
+/* -------------------------------------------------------
+   LOADING
+------------------------------------------------------- */
+
+#boot{
+  position:fixed;
+  inset:0;
+  z-index:200;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background:#000;
+
+  transition:
+    opacity .4s,
+    visibility .4s;
+}
+
+#boot.hide{
+  opacity:0;
+  visibility:hidden;
+}
+
+.bootInner{
+  text-align:center;
+}
+
+.bootLogo{
+  font-size:24px;
+  font-weight:800;
+  letter-spacing:-.8px;
+}
+
+.bootSub{
+  margin-top:7px;
+  color:#777;
+  font-size:11px;
+}
+
+.loader{
+  width:110px;
+  height:2px;
+
+  margin:18px auto 0;
+
+  overflow:hidden;
+
+  background:#1d1d20;
+  border-radius:4px;
+}
+
+.loaderBar{
+  width:35%;
+  height:100%;
+  background:linear-gradient(
+    90deg,
+    var(--purple),
+    var(--blue),
+    var(--pink)
+  );
+
+  animation:
+    loadbar 1.1s infinite ease-in-out;
+}
+
+@keyframes loadbar{
+  0%{
+    transform:translateX(-120%);
+  }
+  100%{
+    transform:translateX(400%);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- =====================================================
+     BOOT
+====================================================== -->
+
+<div id="boot">
+  <div class="bootInner">
+    <div class="bootLogo">HyperStream</div>
+    <div class="bootSub">XR holographic processor</div>
+    <div class="loader">
+      <div class="loaderBar"></div>
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================
+     THREE.JS CANVAS
+====================================================== -->
+
+<div id="view">
+  <canvas id="c"></canvas>
+</div>
+
+<!-- =====================================================
+     MEDIA ELEMENTS
+====================================================== -->
+
+<video
+  id="cam"
+  playsinline
+  muted
+  autoplay
+  webkit-playsinline
+></video>
+
+<video
+  id="remoteVideo"
+  playsinline
+  muted
+  autoplay
+  webkit-playsinline
+></video>
+
+<video
+  id="localVideo"
+  playsinline
+  muted
+  autoplay
+  webkit-playsinline
+></video>
+
+<video
+  id="preview"
+  playsinline
+  muted
+  autoplay
+  webkit-playsinline
+></video>
+
+<!-- =====================================================
+     TOP UI
+====================================================== -->
+
+<div class="top">
+
+  <div class="logo">
+    HyperStream
+    <span>XR</span>
+  </div>
+
+  <div class="pill">
+
+    <div
+      class="recdot"
+      id="recDot"
+    ></div>
+
+    <span id="fps">—</span>
+
+  </div>
+
+</div>
+
+<!-- =====================================================
+     CONNECTION STATUS
+====================================================== -->
+
+<div
+  id="connection"
+  class="connection"
+>
+
+  <div
+    id="connectionDot"
+    class="connectionDot"
+  ></div>
+
+  <span id="connectionText">
+    Camera disconnected
+  </span>
+
+</div>
+
+<!-- =====================================================
+     VR BUTTON
+====================================================== -->
+
+<button
+  id="vrButton"
+  onclick="enterVR()"
+>
+  Enter VR
+</button>
+
+<!-- =====================================================
+     BOTTOM CONTROLS
+====================================================== -->
+
+<div class="sheet">
+
+  <div
+    class="status"
+    id="status"
+  >
+    HyperStream ready
+  </div>
+
+  <div class="meta">
+
+    <span>
+      Live
+      <b id="nPts">0</b>
+    </span>
+
+    <span>
+      AI
+      <b id="ai">loading</b>
+    </span>
+
+    <span>
+      World
+      <b id="nWorld">0</b>
+    </span>
+
+  </div>
+
+  <div class="g2">
+
+    <button
+      class="red"
+      id="scanBtn"
+      onclick="toggleScan()"
+    >
+      Scan
+    </button>
+
+    <button
+      class="green"
+      id="recBtn"
+      onclick="toggleRec()"
+      disabled
+    >
+      Record
+    </button>
+
+  </div>
+
+  <button
+    class="main"
+    id="buildBtn"
+    onclick="buildWorld()"
+    disabled
+  >
+    Build Hologram
+  </button>
+
+  <div class="g2">
+
+    <button
+      class="blue"
+      onclick="openConnect()"
+    >
+      Connect iPhone
+    </button>
+
+    <button
+      class="cyan"
+      onclick="switchCamera()"
+    >
+      Camera
+    </button>
+
+  </div>
+
+  <div class="g3">
+
+    <button
+      class="blue"
+      onclick="document.getElementById('file').click()"
+    >
+      Upload
+    </button>
+
+    <button
+      class="orange"
+      id="shareBtn"
+      onclick="shareWorld()"
+      disabled
+    >
+      Export
+    </button>
+
+    <button
+      class="dim"
+      id="clearBtn"
+      onclick="clearWorld()"
+      disabled
+    >
+      Clear
+    </button>
+
+  </div>
+
+  <input
+    type="file"
+    id="file"
+    accept="
+      .jpg,
+      .jpeg,
+      .png,
+      .webp,
+      .gif,
+      .json,
+      image/jpeg,
+      image/png,
+      image/webp
+    "
+    onchange="onFile(event)"
+  >
+
+</div>
+
+<!-- =====================================================
+     CONNECTION PANEL
+====================================================== -->
+
+<div
+  id="connectPanel"
+>
+
+  <div class="panelTitle">
+    iPhone Camera
+  </div>
+
+  <div class="panelSub">
+    Open HyperStream on the iPhone and Quest/desktop
+    using the same signaling server. The iPhone camera
+    travels directly over WebRTC.
+  </div>
+
+  <input
+    id="serverUrl"
+    class="field"
+    placeholder="wss://your-server.example.com"
+    autocomplete="off"
+  >
+
+  <input
+    id="roomId"
+    class="field"
+    placeholder="Room name"
+    value="hyperstream"
+    autocomplete="off"
+  >
+
+  <div class="panelButtons">
+
+    <button
+      class="blue"
+      onclick="connectAsViewer()"
+    >
+      Viewer
+    </button>
+
+    <button
+      class="green"
+      onclick="connectAsCamera()"
+    >
+      iPhone Camera
+    </button>
+
+  </div>
+
+  <button
+    class="closeBtn"
+    onclick="closeConnect()"
+  >
+    Close
+  </button>
+
+</div>
+
+<!-- =====================================================
+     THREE.JS
+====================================================== -->
+
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">
+</script>
+
+<script
+  src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js">
+</script>
+
+<!-- =====================================================
+     TRANSFORMERS.JS
+====================================================== -->
+
+<script type="module">
+
+import {
+  pipeline,
+  env as hf
+} from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.4.0";
+
+hf.allowLocalModels = false;
+hf.useBrowserCache = true;
+
+window.__pipe = pipeline;
+
+window.dispatchEvent(
+  new Event("hf-ready")
+);
+
+if(window.__bootAI){
+  window.__bootAI();
+}
+
+</script>
+
+<!-- =====================================================
+     HYPERSTREAM ENGINE
+====================================================== -->
+
+<script>
+
+"use strict";
+
+/* ========================================================
+   GLOBAL HELPERS
+======================================================== */
+
+const $ = id =>
+  document.getElementById(id);
+
+const LIVE_MAX = 72000;
+const WORLD_MAX = 180000;
+const DS = 14.2;
+
+let scene;
+let camera;
+let renderer;
+let controls;
+
+let video;
+let remoteVideo;
+let localVideo;
+
+let c2d;
+let ctx;
+
+let ready = false;
+let scanning = false;
+let recording = false;
+
+let pts;
+let glow;
+
+let posA;
+let colA;
+
+let nLive = 0;
+
+let world = null;
+let worldGlow = null;
+
+let frames = [];
+
+let mediaRecorder = null;
+
+let lastCap = 0;
+
+let depthEst = null;
+let aiReady = false;
+let aiLoading = false;
+
+let fc = 0;
+let ft = 0;
+
+let sprite = null;
+
+let sharing = false;
+
+let lastSample = 0;
+
+let activeCameraMode = "local";
+
+let localStream = null;
+let remoteStream = null;
+
+let ws = null;
+let peer = null;
+
+let peerRole = null;
+let peerReady = false;
+
+let room = "hyperstream";
+
+let serverURL = "";
+
+let remoteCandidateQueue = [];
+
+let vrSession = null;
+
+
+/* ========================================================
+   DEVICE DETECTION
+======================================================== */
+
+const isMobile =
+  /iPhone|iPad|iPod|Android/i.test(
+    navigator.userAgent
+  );
+
+const isIOS =
+  /iPhone|iPad|iPod/i.test(
+    navigator.userAgent
+  );
+
+const isQuest =
+  /Oculus|Quest/i.test(
+    navigator.userAgent
+  );
+
+
+/* ========================================================
+   WEBGL INIT
+======================================================== */
+
+(function init(){
+
+  sprite = makeSprite();
+
+  scene = new THREE.Scene();
+
+  scene.fog =
+    new THREE.FogExp2(
+      0x000000,
+      0.0016
+    );
+
+  camera =
+    new THREE.PerspectiveCamera(
+      52,
+      innerWidth / innerHeight,
+      0.1,
+      500
+    );
+
+  camera.position.set(
+    0,
+    1.1,
+    7.8
+  );
+
+  renderer =
+    new THREE.WebGLRenderer({
+
+      canvas:$("c"),
+
+      antialias:true,
+
+      powerPreference:
+        "high-performance",
+
+      preserveDrawingBuffer:true
+
+    });
+
+  renderer.setPixelRatio(
+    Math.min(
+      devicePixelRatio || 1,
+      1.75
+    )
+  );
+
+  renderer.setSize(
+    innerWidth,
+    innerHeight
+  );
+
+  renderer.setClearColor(
+    0x000000
+  );
+
+
+  controls =
+    new THREE.OrbitControls(
+      camera,
+      renderer.domElement
+    );
+
+  controls.enableDamping = true;
+
+  controls.dampingFactor = .07;
+
+  controls.autoRotate = true;
+
+  controls.autoRotateSpeed = .28;
+
+  controls.target.set(
+    0,
+    .35,
+    0
+  );
+
+  controls.minDistance = 3.2;
+
+  controls.maxDistance = 22;
+
+  controls.minPolarAngle = .15;
+
+  controls.maxPolarAngle =
+    Math.PI - .2;
+
+
+  scene.add(
+    new THREE.AmbientLight(
+      0xffffff,
+      1.35
+    )
+  );
+
+
+  const key =
+    new THREE.DirectionalLight(
+      0xc8f0ff,
+      .55
+    );
+
+  key.position.set(
+    2,
+    5,
+    3
+  );
+
+  scene.add(key);
+
+
+  const fill =
+    new THREE.DirectionalLight(
+      0xffe8d0,
+      .22
+    );
+
+  fill.position.set(
+    -3,
+    2,
+    -2
+  );
+
+  scene.add(fill);
+
+
+  const geo =
+    new THREE.BufferGeometry();
+
+
+  posA =
+    new THREE.BufferAttribute(
+      new Float32Array(
+        LIVE_MAX * 3
+      ),
+      3
+    );
+
+
+  colA =
+    new THREE.BufferAttribute(
+      new Float32Array(
+        LIVE_MAX * 3
+      ),
+      3
+    );
+
+
+  geo.setAttribute(
+    "position",
+    posA
+  );
+
+  geo.setAttribute(
+    "color",
+    colA
+  );
+
+  geo.setDrawRange(
+    0,
+    0
+  );
+
+
+  pts =
+    new THREE.Points(
+      geo,
+      mat(
+        .038,
+        .88
+      )
+    );
+
+
+  glow =
+    new THREE.Points(
+      geo,
+      mat(
+        .11,
+        .16
+      )
+    );
+
+
+  scene.add(pts);
+  scene.add(glow);
+
+
+  const grid =
+    new THREE.GridHelper(
+      9,
+      18,
+      0x1a3a7a,
+      0x0a0a0e
+    );
+
+  grid.position.y =
+    -1.2;
+
+  grid.material.opacity =
+    .12;
+
+  grid.material.transparent =
+    true;
+
+  scene.add(grid);
+
+
+  addEventListener(
+    "resize",
+    resize
+  );
+
+
+  video =
+    $("cam");
+
+  remoteVideo =
+    $("remoteVideo");
+
+  localVideo =
+    $("localVideo");
+
+
+  c2d =
+    document.createElement(
+      "canvas"
+    );
+
+  ctx =
+    c2d.getContext(
+      "2d",
+      {
+        willReadFrequently:true
+      }
+    );
+
+
+  renderer.setAnimationLoop(
+    tick
+  );
+
+
+  window.__bootAI =
+    loadAI;
+
+
+  if(window.__pipe){
+    loadAI();
+  }else{
+
+    window.addEventListener(
+      "hf-ready",
+      () => loadAI(),
+      {once:true}
+    );
+
+  }
+
+
+  setTimeout(
+    () => {
+      $("boot")
+        .classList
+        .add("hide");
+    },
+    650
+  );
+
+
+  if(
+    navigator.xr &&
+    navigator.xr.isSessionSupported
+  ){
+
+    navigator.xr
+      .isSessionSupported(
+        "immersive-vr"
+      )
+      .then(
+        supported => {
+
+          if(supported){
+
+            $("vrButton")
+              .style.display =
+              "block";
+
+          }
+
+        }
+      )
+      .catch(
+        () => {}
+      );
+
+  }
+
+})();
+
+
+/* ========================================================
+   RESIZE
+======================================================== */
+
+function resize(){
+
+  camera.aspect =
+    innerWidth /
+    innerHeight;
+
+  camera.updateProjectionMatrix();
+
+  renderer.setSize(
+    innerWidth,
+    innerHeight
+  );
+
+}
+
+
+/* ========================================================
+   HOLOGRAM SPRITE
+======================================================== */
+
+function makeSprite(){
+
+  const c =
+    document.createElement(
+      "canvas"
+    );
+
+  c.width =
+    c.height =
+    128;
+
+  const g =
+    c.getContext("2d");
+
+  const r = 64;
+
+  const grd =
+    g.createRadialGradient(
+      r,
+      r,
+      0,
+      r,
+      r,
+      r
+    );
+
+  grd.addColorStop(
+    0,
+    "rgba(255,255,255,1)"
+  );
+
+  grd.addColorStop(
+    .12,
+    "rgba(255,255,255,.95)"
+  );
+
+  grd.addColorStop(
+    .28,
+    "rgba(255,255,255,.55)"
+  );
+
+  grd.addColorStop(
+    .55,
+    "rgba(255,255,255,.18)"
+  );
+
+  grd.addColorStop(
+    .82,
+    "rgba(255,255,255,.04)"
+  );
+
+  grd.addColorStop(
+    1,
+    "rgba(255,255,255,0)"
+  );
+
+  g.fillStyle =
+    grd;
+
+  g.fillRect(
+    0,
+    0,
+    128,
+    128
+  );
+
+  const t =
+    new THREE.CanvasTexture(
+      c
+    );
+
+  t.needsUpdate =
+    true;
+
+  t.minFilter =
+    THREE.LinearFilter;
+
+  t.magFilter =
+    THREE.LinearFilter;
+
+  return t;
+
+}
+
+
+/* ========================================================
+   POINT MATERIAL
+======================================================== */
+
+function mat(
+  size,
+  opacity
+){
+
+  const options = {
+
+    size,
+
     vertexColors:true,
+
     transparent:true,
-    opacity:0.92,
-    blending:THREE.AdditiveBlending
+
+    opacity,
+
+    blending:
+      THREE.AdditiveBlending,
+
+    depthWrite:false,
+
+    sizeAttenuation:true,
+
+    depthTest:true
+
+  };
+
+  if(sprite){
+
+    options.map =
+      sprite;
+
+  }
+
+  return new THREE.PointsMaterial(
+    options
+  );
+
+}
+
+
+/* ========================================================
+   LOCAL CAMERA
+======================================================== */
+
+async function startCamera(){
+
+  if(
+    ready &&
+    video.srcObject
+  ){
+
+    return true;
+
+  }
+
+
+  if(
+    !navigator.mediaDevices ||
+    !navigator.mediaDevices.getUserMedia
+  ){
+
+    $("status").textContent =
+      "Camera unavailable";
+
+    return false;
+
+  }
+
+
+  const attempts = [
+
+    {
+      video:{
+        facingMode:{
+          ideal:"environment"
+        },
+        width:{
+          ideal:1280
+        },
+        height:{
+          ideal:720
+        }
+      },
+      audio:false
+    },
+
+    {
+      video:{
+        facingMode:"user"
+      },
+      audio:false
+    },
+
+    {
+      video:true,
+      audio:false
+    }
+
+  ];
+
+
+  for(
+    const constraints
+    of attempts
+  ){
+
+    try{
+
+      const stream =
+        await navigator
+          .mediaDevices
+          .getUserMedia(
+            constraints
+          );
+
+      localStream =
+        stream;
+
+      video.srcObject =
+        stream;
+
+      video.muted =
+        true;
+
+      video.playsInline =
+        true;
+
+      await video.play();
+
+
+      localVideo.srcObject =
+        stream;
+
+
+      ready = true;
+
+      activeCameraMode =
+        "local";
+
+
+      $("preview").srcObject =
+        stream;
+
+      $("preview").style.display =
+        "block";
+
+
+      $("status").textContent =
+        "Camera ready";
+
+      return true;
+
+    }catch(e){}
+
+  }
+
+
+  $("status").textContent =
+    "Camera blocked — use Upload";
+
+  return false;
+
+}
+
+
+/* ========================================================
+   SWITCH CAMERA
+======================================================== */
+
+async function switchCamera(){
+
+  if(
+    activeCameraMode ===
+    "remote"
+  ){
+
+    if(
+      localStream
+    ){
+
+      activeCameraMode =
+        "local";
+
+      video.srcObject =
+        localStream;
+
+      $("preview").srcObject =
+        localStream;
+
+      $("status").textContent =
+        "Using local camera";
+
+      return;
+
+    }
+
+  }
+
+
+  if(!ready){
+
+    await startCamera();
+
+    return;
+
+  }
+
+
+  if(!localStream){
+
+    await startCamera();
+
+    return;
+
+  }
+
+
+  const track =
+    localStream
+      .getVideoTracks()[0];
+
+  if(!track){
+
+    return;
+
+  }
+
+
+  const settings =
+    track.getSettings();
+
+
+  const current =
+    settings.facingMode;
+
+
+  const next =
+    current ===
+    "environment"
+      ? "user"
+      : "environment";
+
+
+  try{
+
+    localStream
+      .getTracks()
+      .forEach(
+        t => t.stop()
+      );
+
+
+    const stream =
+      await navigator
+        .mediaDevices
+        .getUserMedia({
+
+          video:{
+            facingMode:next,
+            width:{
+              ideal:1280
+            },
+            height:{
+              ideal:720
+            }
+          },
+
+          audio:false
+
+        });
+
+
+    localStream =
+      stream;
+
+    video.srcObject =
+      stream;
+
+    await video.play();
+
+    $("preview").srcObject =
+      stream;
+
+    activeCameraMode =
+      "local";
+
+    $("status").textContent =
+      next === "environment"
+        ? "Rear camera"
+        : "Front camera";
+
+  }catch(e){
+
+    $("status").textContent =
+      "Camera switch unavailable";
+
+  }
+
+}
+
+
+/* ========================================================
+   AI DEPTH
+======================================================== */
+
+async function loadAI(){
+
+  if(
+    aiReady ||
+    aiLoading
+  ){
+
+    return;
+
+  }
+
+
+  aiLoading =
+    true;
+
+
+  $("ai").textContent =
+    "loading";
+
+
+  try{
+
+    if(!window.__pipe){
+
+      await new Promise(
+        resolve => {
+
+          window.addEventListener(
+            "hf-ready",
+            resolve,
+            {once:true}
+          );
+
+          setTimeout(
+            resolve,
+            7000
+          );
+
+        }
+      );
+
+    }
+
+
+    if(!window.__pipe){
+
+      throw new Error(
+        "Transformers unavailable"
+      );
+
+    }
+
+
+    const options =
+      isMobile
+
+        ? [
+            {
+              device:"wasm",
+              dtype:"q8"
+            },
+            {
+              device:"wasm"
+            }
+          ]
+
+        : [
+            {
+              device:"webgpu"
+            },
+            {
+              device:"wasm",
+              dtype:"q8"
+            },
+            {
+              device:"wasm"
+            }
+          ];
+
+
+    for(
+      const option
+      of options
+    ){
+
+      try{
+
+        depthEst =
+          await window.__pipe(
+            "depth-estimation",
+            "onnx-community/depth-anything-v2-small",
+            option
+          );
+
+        if(depthEst){
+          break;
+        }
+
+      }catch(e){}
+
+    }
+
+
+    if(!depthEst){
+
+      throw new Error(
+        "Depth model failed"
+      );
+
+    }
+
+
+    aiReady =
+      true;
+
+    $("ai").textContent =
+      "Ready";
+
+    $("ai").style.color =
+      "var(--green)";
+
+  }catch(e){
+
+    console.warn(
+      "AI depth unavailable",
+      e
+    );
+
+    $("ai").textContent =
+      "off";
+
+    $("ai").style.color =
+      "var(--muted)";
+
+  }
+
+
+  aiLoading =
+    false;
+
+}
+
+
+/* ========================================================
+   DEPTH MAP
+======================================================== */
+
+async function depthMap(canvas){
+
+  if(
+    !aiReady ||
+    !depthEst
+  ){
+
+    return null;
+
+  }
+
+
+  try{
+
+    const result =
+      await depthEst(
+        canvas
+      );
+
+
+    const image =
+      result.depth ||
+      result;
+
+
+    const dw =
+      image.width;
+
+    const dh =
+      image.height;
+
+    const data =
+      image.data;
+
+
+    if(
+      !dw ||
+      !dh ||
+      !data
+    ){
+
+      return null;
+
+    }
+
+
+    const tw =
+      canvas.width;
+
+    const th =
+      canvas.height;
+
+
+    const out =
+      new Float32Array(
+        tw * th
+      );
+
+
+    const samples =
+      [];
+
+
+    const stride =
+      Math.max(
+        1,
+        (
+          data.length /
+          4000
+        ) | 0
+      );
+
+
+    for(
+      let i=0;
+      i<data.length;
+      i+=stride
+    ){
+
+      samples.push(
+        +data[i]
+      );
+
+    }
+
+
+    samples.sort(
+      (a,b)=>a-b
+    );
+
+
+    const lo =
+      samples[
+        (samples.length*.05)|0
+      ];
+
+
+    const hi =
+      samples[
+        (samples.length*.95)|0
+      ];
+
+
+    const rng =
+      Math.max(
+        1e-6,
+        hi-lo
+      );
+
+
+    for(
+      let y=0;
+      y<th;
+      y++
+    ){
+
+      for(
+        let x=0;
+        x<tw;
+        x++
+      ){
+
+        const sx =
+          Math.min(
+            dw-1,
+            ((x+.5)/tw)*dw
+          ) | 0;
+
+
+        const sy =
+          Math.min(
+            dh-1,
+            ((y+.5)/th)*dh
+          ) | 0;
+
+
+        out[
+          y*tw+x
+        ] =
+          Math.min(
+            1,
+            Math.max(
+              0,
+              (
+                +data[
+                  sy*dw+sx
+                ] - lo
+              ) / rng
+            )
+          );
+
+      }
+
+    }
+
+
+    /*
+      Basic foreground/background
+      orientation correction.
+    */
+
+    let cs=0;
+    let cn=0;
+    let bs=0;
+    let bn=0;
+
+
+    for(
+      let y=0;
+      y<th;
+      y+=6
+    ){
+
+      for(
+        let x=0;
+        x<tw;
+        x+=6
+      ){
+
+        const v =
+          out[
+            y*tw+x
+          ];
+
+
+        if(
+          x>tw*.3 &&
+          x<tw*.7 &&
+          y>th*.25 &&
+          y<th*.75
+        ){
+
+          cs += v;
+          cn++;
+
+        }else if(
+          x<tw*.1 ||
+          x>tw*.9 ||
+          y<th*.1 ||
+          y>th*.9
+        ){
+
+          bs += v;
+          bn++;
+
+        }
+
+      }
+
+    }
+
+
+    if(
+      cn &&
+      bn &&
+      cs/cn >
+      bs/bn+.04
+    ){
+
+      for(
+        let i=0;
+        i<out.length;
+        i++
+      ){
+
+        out[i] =
+          1-out[i];
+
+      }
+
+    }
+
+
+    return out;
+
+  }catch(e){
+
+    return null;
+
+  }
+
+}
+
+
+/* ========================================================
+   LIVE SAMPLE
+======================================================== */
+
+function sample(){
+
+  const source =
+    activeCameraMode ===
+    "remote"
+      ? remoteVideo
+      : video;
+
+
+  if(
+    !source ||
+    source.readyState < 2
+  ){
+
+    return;
+
+  }
+
+
+  const now =
+    performance.now();
+
+
+  if(
+    now-lastSample <
+    45
+  ){
+
+    return;
+
+  }
+
+
+  lastSample =
+    now;
+
+
+  const vw =
+    source.videoWidth || 0;
+
+  const vh =
+    source.videoHeight || 0;
+
+
+  if(
+    vw<2 ||
+    vh<2
+  ){
+
+    return;
+
+  }
+
+
+  const maxW =
+    isMobile
+      ? 320
+      : 360;
+
+
+  const scale =
+    Math.min(
+      1,
+      maxW/vw
+    );
+
+
+  const w =
+    Math.max(
+      2,
+      Math.round(vw*scale)
+    );
+
+
+  const h =
+    Math.max(
+      2,
+      Math.round(vh*scale)
+    );
+
+
+  if(
+    c2d.width !== w ||
+    c2d.height !== h
+  ){
+
+    c2d.width =
+      w;
+
+    c2d.height =
+      h;
+
+  }
+
+
+  try{
+
+    ctx.drawImage(
+      source,
+      0,
+      0,
+      w,
+      h
+    );
+
+  }catch(e){
+
+    return;
+
+  }
+
+
+  let pix;
+
+  try{
+
+    pix =
+      ctx.getImageData(
+        0,
+        0,
+        w,
+        h
+      ).data;
+
+  }catch(e){
+
+    return;
+
+  }
+
+
+  let n=0;
+
+
+  const lum =
+    new Float32Array(
+      w*h
+    );
+
+
+  for(
+    let i=0,p=0;
+    i<pix.length;
+    i+=4,p++
+  ){
+
+    lum[p] =
+      .299*(pix[i]/255) +
+      .587*(pix[i+1]/255) +
+      .114*(pix[i+2]/255);
+
+  }
+
+
+  for(
+    let y=0;
+    y<h && n<LIVE_MAX;
+    y++
+  ){
+
+    for(
+      let x=0;
+      x<w && n<LIVE_MAX;
+      x++
+    ){
+
+      const p =
+        y*w+x;
+
+      const L =
+        lum[p];
+
+
+      if(
+        L<.03 ||
+        L>.97
+      ){
+
+        continue;
+
+      }
+
+
+      let edge=0;
+
+
+      if(
+        x>=2 &&
+        x<w-2 &&
+        y>=2 &&
+        y<h-2
+      ){
+
+        const gx =
+          Math.abs(
+            lum[p-1] -
+            lum[p+1]
+          )
+          +
+          .55*
+          Math.abs(
+            lum[p-2] -
+            lum[p+2]
+          );
+
+
+        const gy =
+          Math.abs(
+            lum[p-w] -
+            lum[p+w]
+          )
+          +
+          .55*
+          Math.abs(
+            lum[p-2*w] -
+            lum[p+2*w]
+          );
+
+
+        edge =
+          Math.min(
+            1,
+            (gx+gy)*3.1
+          );
+
+      }
+
+
+      if(
+        edge<.07 &&
+        Math.random()>.52
+      ){
+
+        continue;
+
+      }
+
+
+      const d =
+        Math.pow(
+          1-L,
+          1.05
+        )*.42
+        +
+        edge*.92;
+
+
+      const i =
+        n*3;
+
+      const pi =
+        p*4;
+
+
+      /*
+        Mirror X for normal
+        camera appearance.
+      */
+
+      posA.array[i] =
+        ((w-x)/w*2-1)
+        *2.08;
+
+
+      posA.array[i+1] =
+        (-(y/h*2-1))
+        *1.78
+        +.28;
+
+
+      posA.array[i+2] =
+        (d-.20)
+        *DS*.68;
+
+
+      let r =
+        pix[pi]/255;
+
+      let g =
+        pix[pi+1]/255;
+
+      let b =
+        pix[pi+2]/255;
+
+
+      const avg =
+        (r+g+b)/3;
+
+
+      r =
+        avg+(r-avg)*1.32;
+
+      g =
+        avg+(g-avg)*1.26;
+
+      b =
+        avg+(b-avg)*1.22;
+
+
+      const tone =
+        .62+.32*L;
+
+
+      colA.array[i] =
+        Math.min(
+          .92,
+          r*tone
+        );
+
+
+      colA.array[i+1] =
+        Math.min(
+          .92,
+          g*tone
+        );
+
+
+      colA.array[i+2] =
+        Math.min(
+          .95,
+          b*tone*1.04
+        );
+
+
+      n++;
+
+    }
+
+  }
+
+
+  posA.needsUpdate =
+    true;
+
+  colA.needsUpdate =
+    true;
+
+
+  pts.geometry.setDrawRange(
+    0,
+    n
+  );
+
+  glow.geometry.setDrawRange(
+    0,
+    n
+  );
+
+
+  nLive =
+    n;
+
+
+  $("nPts").textContent =
+    n.toLocaleString();
+
+
+  /*
+    Recording stores the current
+    reconstructed point state.
+  */
+
+  if(
+    recording &&
+    performance.now()-lastCap>=70
+  ){
+
+    lastCap =
+      performance.now();
+
+
+    frames.push({
+
+      n,
+
+      pos:
+        new Float32Array(
+          posA.array.buffer.slice(
+            0,
+            n*12
+          )
+        ),
+
+      col:
+        new Float32Array(
+          colA.array.buffer.slice(
+            0,
+            n*12
+          )
+        ),
+
+      rgb:
+        cloneCanvas(c2d)
+
+    });
+
+
+    if(
+      frames.length%4===0
+    ){
+
+      $("status").textContent =
+        "Recording… "
+        +
+        frames.length
+        +
+        " frames";
+
+    }
+
+  }
+
+}
+
+
+/* ========================================================
+   CANVAS CLONE
+======================================================== */
+
+function cloneCanvas(source){
+
+  const c =
+    document.createElement(
+      "canvas"
+    );
+
+  c.width =
+    source.width;
+
+  c.height =
+    source.height;
+
+  try{
+
+    c.getContext("2d")
+      .drawImage(
+        source,
+        0,
+        0
+      );
+
+  }catch(e){
+
+    return null;
+
+  }
+
+  return c;
+
+}
+
+
+/* ========================================================
+   RENDER LOOP
+======================================================== */
+
+function tick(now){
+
+  if(scanning){
+
+    controls.autoRotate =
+      false;
+
+  }
+
+
+  controls.update();
+
+
+  fc++;
+
+
+  if(
+    now-ft>1000
+  ){
+
+    $("fps").textContent =
+      Math.round(
+        fc*1000/
+        (now-ft)
+      )
+      +
+      " FPS";
+
+
+    fc=0;
+
+    ft=now;
+
+  }
+
+
+  if(
+    scanning &&
+    (
+      ready ||
+      activeCameraMode==="remote"
+    )
+  ){
+
+    sample();
+
+  }
+
+
+  renderer.render(
+    scene,
+    camera
+  );
+
+}
+
+
+/* ========================================================
+   SCAN
+======================================================== */
+
+async function toggleScan(){
+
+  /*
+    Explicit global function.
+    This fixes:
+    Uncaught ReferenceError:
+    toggleScan is not defined
+  */
+
+  if(
+    !ready &&
+    activeCameraMode !==
+    "remote"
+  ){
+
+    $("status").textContent =
+      "Starting camera…";
+
+    $("scanBtn").disabled =
+      true;
+
+
+    const ok =
+      await startCamera();
+
+
+    $("scanBtn").disabled =
+      false;
+
+
+    if(!ok){
+
+      return;
+
+    }
+
+  }
+
+
+  scanning =
+    !scanning;
+
+
+  if(scanning){
+
+    $("scanBtn").textContent =
+      "Stop";
+
+    $("scanBtn").className =
+      "orange";
+
+
+    $("recBtn").disabled =
+      false;
+
+
+    controls.autoRotate =
+      false;
+
+
+    lastSample =
+      0;
+
+
+    $("status").textContent =
+      activeCameraMode ===
+      "remote"
+        ? "Scanning iPhone camera…"
+        : "Scanning…";
+
+
+    for(
+      let i=0;
+      i<5;
+      i++
+    ){
+
+      setTimeout(
+        () => {
+
+          if(scanning){
+
+            sample();
+
+          }
+
+        },
+        20+i*45
+      );
+
+    }
+
+  }else{
+
+    $("scanBtn").textContent =
+      "Scan";
+
+    $("scanBtn").className =
+      "red";
+
+
+    pts.geometry.setDrawRange(
+      0,
+      0
+    );
+
+    glow.geometry.setDrawRange(
+      0,
+      0
+    );
+
+
+    nLive=0;
+
+
+    $("nPts").textContent =
+      "0";
+
+
+    controls.autoRotate =
+      true;
+
+
+    if(frames.length){
+
+      $("buildBtn").disabled =
+        false;
+
+      $("status").textContent =
+        frames.length+
+        " frames — Build Hologram";
+
+    }else{
+
+      $("status").textContent =
+        "Ready";
+
+    }
+
+  }
+
+}
+
+
+/* ========================================================
+   RECORD
+======================================================== */
+
+function toggleRec(){
+
+  if(recording){
+
+    stopRec();
+
+    return;
+
+  }
+
+
+  if(!scanning){
+
+    $("status").textContent =
+      "Tap Scan first";
+
+    return;
+
+  }
+
+
+  frames=[];
+
+  lastCap=0;
+
+
+  try{
+
+    if(
+      typeof MediaRecorder !==
+      "undefined" &&
+      $("c").captureStream
+    ){
+
+      let mime =
+        "video/webm;codecs=vp9";
+
+
+      if(
+        !MediaRecorder
+          .isTypeSupported(
+            mime
+          )
+      ){
+
+        mime =
+          "video/webm";
+
+      }
+
+
+      mediaRecorder =
+        new MediaRecorder(
+          $("c").captureStream(30),
+          {
+            mimeType:mime,
+            videoBitsPerSecond:5000000
+          }
+        );
+
+
+      mediaRecorder.start(120);
+
+    }
+
+  }catch(e){
+
+    mediaRecorder =
+      null;
+
+  }
+
+
+  recording =
+    true;
+
+
+  $("recBtn").textContent =
+    "Stop";
+
+  $("recBtn").className =
+    "red";
+
+
+  $("recDot")
+    .classList
+    .add("on");
+
+
+  $("buildBtn").disabled =
+    false;
+
+
+  $("status").textContent =
+    "Recording…";
+
+}
+
+
+/* ========================================================
+   STOP RECORD
+======================================================== */
+
+function stopRec(){
+
+  if(!recording){
+
+    return;
+
+  }
+
+
+  recording =
+    false;
+
+
+  try{
+
+    if(
+      mediaRecorder &&
+      mediaRecorder.state !==
+      "inactive"
+    ){
+
+      mediaRecorder.stop();
+
+    }
+
+  }catch(e){}
+
+
+  $("recBtn").textContent =
+    "Record";
+
+  $("recBtn").className =
+    "green";
+
+
+  $("recDot")
+    .classList
+    .remove("on");
+
+
+  if(
+    !frames.length &&
+    nLive>80
+  ){
+
+    snapshotLive();
+
+  }
+
+
+  if(frames.length){
+
+    $("buildBtn").disabled =
+      false;
+
+    $("status").textContent =
+      frames.length+
+      " frames — Build Hologram";
+
+  }else{
+
+    $("status").textContent =
+      "No frames captured";
+
+  }
+
+}
+
+
+/* ========================================================
+   LIVE SNAPSHOT
+======================================================== */
+
+function snapshotLive(){
+
+  if(nLive<20){
+
+    return;
+
+  }
+
+
+  frames.push({
+
+    n:nLive,
+
+    pos:
+      new Float32Array(
+        posA.array.buffer.slice(
+          0,
+          nLive*12
+        )
+      ),
+
+    col:
+      new Float32Array(
+        colA.array.buffer.slice(
+          0,
+          nLive*12
+        )
+      ),
+
+    rgb:
+      cloneCanvas(c2d)
+
   });
 
-  const pts=new THREE.Points(g,mat);
-  scene.add(pts);
-  layers.push(pts);
 }
 
-function toggleScan(){
-  scanning=!scanning;
-  const b=$('scanBtn');
-  b.textContent=scanning?'STOP UNLIMITED SCAN':'ACTIVATE UNLIMITED SCAN';
-  b.classList.toggle('on',scanning);
+
+/* ========================================================
+   BUILD WORLD
+======================================================== */
+
+async function buildWorld(){
+
+  if(
+    !frames.length &&
+    nLive>80
+  ){
+
+    snapshotLive();
+
+  }
+
+
+  if(
+    !frames.length &&
+    scanning
+  ){
+
+    sample();
+
+    snapshotLive();
+
+  }
+
+
+  if(!frames.length){
+
+    $("status").textContent =
+      "Scan and Record first";
+
+    return;
+
+  }
+
+
+  $("buildBtn").disabled =
+    true;
+
+
+  if(scanning){
+
+    scanning=false;
+
+    $("scanBtn").textContent =
+      "Scan";
+
+    $("scanBtn").className =
+      "red";
+
+
+    pts.geometry.setDrawRange(
+      0,
+      0
+    );
+
+    glow.geometry.setDrawRange(
+      0,
+      0
+    );
+
+  }
+
+
+  try{
+
+    await buildFromFrames();
+
+  }catch(e){
+
+    console.error(e);
+
+    $("status").textContent =
+      "Build failed";
+
+  }
+
+
+  $("buildBtn").disabled =
+    false;
+
 }
 
-function expJSON(){
-  const blob=new Blob([JSON.stringify({HyperStreamXD:rec})],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download='quantum_matrix.json';a.click();
+
+/* ========================================================
+   BUILD FROM FRAMES
+======================================================== */
+
+async function buildFromFrames(){
+
+  const pos=[];
+  const col=[];
+
+
+  const useAI =
+    aiReady &&
+    frames.some(
+      f => f.rgb
+    );
+
+
+  const maxF =
+    Math.min(
+      frames.length,
+      useAI ? 28 : 55
+    );
+
+
+  const step =
+    Math.max(
+      1,
+      Math.floor(
+        frames.length/maxF
+      )
+    );
+
+
+  const spread =
+    useAI
+      ? .85
+      : 3.4;
+
+
+  let total=0;
+
+
+  for(
+    let i=0;
+    i<frames.length;
+    i+=step
+  ){
+
+    total++;
+
+  }
+
+
+  let done=0;
+
+
+  $("status").textContent =
+    useAI
+      ? "AI reconstructing…"
+      : "Building…";
+
+
+  for(
+    let i=0;
+    i<frames.length;
+    i+=step
+  ){
+
+    const f =
+      frames[i];
+
+
+    const z =
+      (
+        i/
+        Math.max(
+          1,
+          frames.length-1
+        )
+        -.5
+      )
+      *spread;
+
+
+    let usedAI =
+      false;
+
+
+    if(
+      useAI &&
+      f.rgb
+    ){
+
+      const depth =
+        await depthMap(
+          f.rgb
+        );
+
+
+      if(depth){
+
+        usedAI=true;
+
+
+        const sw =
+          f.rgb.width;
+
+        const sh =
+          f.rgb.height;
+
+
+        let pix=null;
+
+
+        try{
+
+          pix =
+            f.rgb
+              .getContext(
+                "2d",
+                {
+                  willReadFrequently:true
+                }
+              )
+              .getImageData(
+                0,
+                0,
+                sw,
+                sh
+              ).data;
+
+        }catch(e){}
+
+
+        if(pix){
+
+          const st =
+            Math.max(
+              1,
+              Math.floor(
+                Math.min(
+                  sw,
+                  sh
+                )/185
+              )
+            );
+
+
+          const budget =
+            Math.ceil(
+              WORLD_MAX/
+              total*
+              1.15
+            );
+
+
+          let add=0;
+
+
+          for(
+            let y=0;
+            y<sh &&
+            add<budget;
+            y+=st
+          ){
+
+            for(
+              let x=0;
+              x<sw &&
+              add<budget;
+              x+=st
+            ){
+
+              const di =
+                y*sw+x;
+
+
+              const dv =
+                depth[di];
+
+
+              if(
+                dv<.03 ||
+                dv>.95
+              ){
+
+                continue;
+
+              }
+
+
+              const pi =
+                di*4;
+
+
+              const r =
+                pix[pi]/255;
+
+              const g =
+                pix[pi+1]/255;
+
+              const b =
+                pix[pi+2]/255;
+
+
+              const L =
+                .299*r+
+                .587*g+
+                .114*b;
+
+
+              if(
+                L<.028 ||
+                L>.975
+              ){
+
+                continue;
+
+              }
+
+
+              const avg =
+                (r+g+b)/3;
+
+
+              pos.push(
+
+                ((sw-x)/sw*2-1)
+                *2.08,
+
+                (-(y/sh*2-1))
+                *1.78+.28,
+
+                (dv-.32)
+                *DS*.68+z
+
+              );
+
+
+              col.push(
+
+                Math.min(
+                  1,
+                  (
+                    avg+
+                    (r-avg)*1.28
+                  )*1.12+.02
+                ),
+
+                Math.min(
+                  1,
+                  (
+                    avg+
+                    (g-avg)*1.22
+                  )*1.12+.03
+                ),
+
+                Math.min(
+                  1,
+                  (
+                    avg+
+                    (b-avg)*1.20
+                  )*1.14+.04
+                )
+
+              );
+
+
+              add++;
+
+            }
+
+          }
+
+        }
+
+      }
+
+    }
+
+
+    if(!usedAI){
+
+      mergeFrame(
+        f,
+        z,
+        pos,
+        col
+      );
+
+    }
+
+
+    done++;
+
+
+    $("status").textContent =
+      (
+        useAI
+          ? "AI "
+          : "Build "
+      )
+      +
+      Math.round(
+        done/total*100
+      )
+      +
+      "%";
+
+
+    if(
+      pos.length/3>=WORLD_MAX
+    ){
+
+      break;
+
+    }
+
+
+    await new Promise(
+      r => setTimeout(
+        r,
+        3
+      )
+    );
+
+  }
+
+
+  showWorld(
+    pos,
+    col
+  );
+
 }
+
+
+/* ========================================================
+   MERGE FRAME
+======================================================== */
+
+function mergeFrame(
+  f,
+  z,
+  pos,
+  col
+){
+
+  const keep =
+    Math.min(
+      1,
+      (
+        WORLD_MAX/
+        Math.max(
+          1,
+          frames.length
+        )
+      )
+      /
+      Math.max(
+        1,
+        f.n
+      )
+      *1.55
+    );
+
+
+  for(
+    let p=0;
+    p<f.n;
+    p++
+  ){
+
+    if(
+      Math.random()>keep
+    ){
+
+      continue;
+
+    }
+
+
+    const j =
+      p*3;
+
+
+    const k =
+      .004;
+
+
+    pos.push(
+
+      f.pos[j]+
+      (
+        Math.random()-.5
+      )*k,
+
+      f.pos[j+1]+
+      (
+        Math.random()-.5
+      )*k,
+
+      f.pos[j+2]+
+      z+
+      (
+        Math.random()-.5
+      )*k
+
+    );
+
+
+    col.push(
+
+      f.col[j],
+      f.col[j+1],
+      f.col[j+2]
+
+    );
+
+
+    if(
+      pos.length/3>=
+      WORLD_MAX
+    ){
+
+      break;
+
+    }
+
+  }
+
+}
+
+
+/* ========================================================
+   SHOW WORLD
+======================================================== */
+
+function showWorld(
+  pos,
+  col
+){
+
+  const count =
+    pos.length/3;
+
+
+  if(count<40){
+
+    $("status").textContent =
+      "Need more scan data";
+
+    return;
+
+  }
+
+
+  try{
+
+    if(world){
+
+      scene.remove(world);
+
+      world.geometry.dispose();
+
+      world.material.dispose();
+
+      world=null;
+
+    }
+
+
+    if(worldGlow){
+
+      scene.remove(
+        worldGlow
+      );
+
+      worldGlow.geometry.dispose();
+
+      worldGlow.material.dispose();
+
+      worldGlow=null;
+
+    }
+
+
+    /*
+      Final hologram contrast pass.
+    */
+
+    for(
+      let i=0;
+      i<col.length;
+      i+=3
+    ){
+
+      let r =
+        col[i];
+
+      let g =
+        col[i+1];
+
+      let b =
+        col[i+2];
+
+
+      const avg =
+        (r+g+b)/3;
+
+
+      r =
+        avg+
+        (r-avg)*1.28;
+
+
+      g =
+        avg+
+        (g-avg)*1.22;
+
+
+      b =
+        avg+
+        (b-avg)*1.20;
+
+
+      col[i] =
+        Math.min(
+          1,
+          r*1.10+.025
+        );
+
+
+      col[i+1] =
+        Math.min(
+          1,
+          g*1.10+.03
+        );
+
+
+      col[i+2] =
+        Math.min(
+          1,
+          b*1.13+.04
+        );
+
+    }
+
+
+    const geo =
+      new THREE.BufferGeometry();
+
+
+    geo.setAttribute(
+      "position",
+      new THREE.BufferAttribute(
+        new Float32Array(pos),
+        3
+      )
+    );
+
+
+    geo.setAttribute(
+      "color",
+      new THREE.BufferAttribute(
+        new Float32Array(col),
+        3
+      )
+    );
+
+
+    world =
+      new THREE.Points(
+        geo,
+        mat(
+          .048,
+          .95
+        )
+      );
+
+
+    world.position.y =
+      .18;
+
+
+    scene.add(
+      world
+    );
+
+
+    worldGlow =
+      new THREE.Points(
+        geo.clone(),
+        mat(
+          .13,
+          .22
+        )
+      );
+
+
+    worldGlow.position.y =
+      .18;
+
+
+    scene.add(
+      worldGlow
+    );
+
+
+    $("nWorld").textContent =
+      Math.round(
+        count
+      ).toLocaleString();
+
+
+    $("clearBtn").disabled =
+      false;
+
+
+    $("shareBtn").disabled =
+      false;
+
+
+    $("status").textContent =
+      "Hologram ready · "
+      +
+      Math.round(
+        count
+      ).toLocaleString()
+      +
+      " pts";
+
+
+    /*
+      Auto-frame hologram.
+    */
+
+    geo.computeBoundingSphere();
+
+
+    const bs =
+      geo.boundingSphere;
+
+
+    if(
+      bs &&
+      bs.radius>.1
+    ){
+
+      const r =
+        Math.max(
+          bs.radius,
+          1.8
+        );
+
+
+      const fit =
+        r/
+        Math.sin(
+          (
+            camera.fov*
+            Math.PI/
+            180
+          )/2
+        )*
+        1.15;
+
+
+      const cx =
+        bs.center.x;
+
+
+      const cy =
+        bs.center.y+
+        world.position.y;
+
+
+      const cz =
+        bs.center.z;
+
+
+      camera.position.set(
+
+        cx,
+
+        cy+r*.18,
+
+        cz+
+        Math.max(
+          fit,
+          6.5
+        )
+
+      );
+
+
+      controls.target.set(
+        cx,
+        cy,
+        cz
+      );
+
+    }else{
+
+      camera.position.set(
+        0,
+        1.15,
+        7.6
+      );
+
+      controls.target.set(
+        0,
+        .35,
+        0
+      );
+
+    }
+
+
+    controls.autoRotate =
+      true;
+
+    controls.autoRotateSpeed =
+      .32;
+
+
+    controls.update();
+
+
+    pts.geometry.setDrawRange(
+      0,
+      0
+    );
+
+    glow.geometry.setDrawRange(
+      0,
+      0
+    );
+
+
+  }catch(e){
+
+    console.error(e);
+
+    $("status").textContent =
+      "Display error";
+
+  }
+
+}
+
+
+/* ========================================================
+   CLEAR
+======================================================== */
+
+function clearWorld(){
+
+  if(world){
+
+    scene.remove(
+      world
+    );
+
+    world.geometry.dispose();
+
+    world.material.dispose();
+
+    world=null;
+
+  }
+
+
+  if(worldGlow){
+
+    scene.remove(
+      worldGlow
+    );
+
+    worldGlow.geometry.dispose();
+
+    worldGlow.material.dispose();
+
+    worldGlow=null;
+
+  }
+
+
+  frames=[];
+
+
+  $("nWorld").textContent =
+    "0";
+
+
+  $("clearBtn").disabled =
+    true;
+
+
+  $("shareBtn").disabled =
+    true;
+
+
+  $("buildBtn").disabled =
+    true;
+
+
+  $("status").textContent =
+    "Cleared";
+
+}
+
+
+/* ========================================================
+   EXPORT HOLOGRAM
+======================================================== */
+
+function shareWorld(){
+
+  if(
+    !world ||
+    sharing
+  ){
+
+    return;
+
+  }
+
+
+  try{
+
+    const mime =
+      MediaRecorder.isTypeSupported(
+        "video/webm;codecs=vp9"
+      )
+        ? "video/webm;codecs=vp9"
+        : "video/webm";
+
+
+    const chunks=[];
+
+
+    const rec =
+      new MediaRecorder(
+        $("c").captureStream(30),
+        {
+          mimeType:mime,
+          videoBitsPerSecond:7000000
+        }
+      );
+
+
+    rec.ondataavailable =
+      e => {
+
+        if(e.data.size){
+
+          chunks.push(
+            e.data
+          );
+
+        }
+
+      };
+
+
+    rec.onstop =
+      () => {
+
+        sharing=false;
+
+
+        $("shareBtn").textContent =
+          "Export";
+
+
+        $("shareBtn").disabled =
+          false;
+
+
+        $("recDot")
+          .classList
+          .remove("on");
+
+
+        if(!chunks.length){
+
+          return;
+
+        }
+
+
+        const blob =
+          new Blob(
+            chunks,
+            {
+              type:
+                "video/webm"
+            }
+          );
+
+
+        const url =
+          URL.createObjectURL(
+            blob
+          );
+
+
+        const a =
+          document.createElement(
+            "a"
+          );
+
+
+        a.href =
+          url;
+
+
+        a.download =
+          "hyperstream_"
+          +
+          Date.now()
+          +
+          ".webm";
+
+
+        document.body.appendChild(a);
+
+        a.click();
+
+        a.remove();
+
+
+        setTimeout(
+          () => URL.revokeObjectURL(url),
+          3000
+        );
+
+      };
+
+
+    rec.start(100);
+
+
+    sharing=true;
+
+
+    $("shareBtn").textContent =
+      "…";
+
+
+    $("shareBtn").disabled =
+      true;
+
+
+    $("recDot")
+      .classList
+      .add("on");
+
+
+    controls.autoRotate =
+      true;
+
+
+    controls.autoRotateSpeed =
+      .5;
+
+
+    $("status").textContent =
+      "Exporting hologram…";
+
+
+    setTimeout(
+      () => {
+
+        if(
+          rec.state !==
+          "inactive"
+        ){
+
+          rec.stop();
+
+        }
+
+      },
+      10000
+    );
+
+  }catch(e){
+
+    console.error(e);
+
+    $("status").textContent =
+      "Export unavailable";
+
+  }
+
+}
+
+
+/* ========================================================
+   IMAGE UPLOAD
+======================================================== */
+
+function onFile(event){
+
+  const file =
+    event.target.files[0];
+
+
+  if(!file){
+
+    return;
+
+  }
+
+
+  event.target.value =
+    "";
+
+
+  const type =
+    (
+      file.type ||
+      ""
+    ).toLowerCase();
+
+
+  const name =
+    (
+      file.name ||
+      ""
+    ).toLowerCase();
+
+
+  if(
+    type.includes("json") ||
+    name.endsWith(".json")
+  ){
+
+    const reader =
+      new FileReader();
+
+
+    reader.onload =
+      e => {
+
+        try{
+
+          const d =
+            JSON.parse(
+              e.target.result
+            );
+
+
+          if(d.frames){
+
+            frames =
+              d.frames.map(
+                f => ({
+
+                  n:f.n,
+
+                  pos:
+                    new Float32Array(
+                      f.pos
+                    ),
+
+                  col:
+                    new Float32Array(
+                      f.col
+                    ),
+
+                  rgb:null
+
+                })
+              );
+
+
+            $("buildBtn")
+              .disabled =
+              !frames.length;
+
+
+            $("status").textContent =
+              frames.length+
+              " frames loaded";
+
+          }else{
+
+            showWorld(
+
+              Array.from(
+                d.pos ||
+                d.positions ||
+                []
+              ),
+
+              Array.from(
+                d.col ||
+                d.colors ||
+                []
+              )
+
+            );
+
+          }
+
+        }catch(e){
+
+          $("status").textContent =
+            "Invalid JSON";
+
+        }
+
+      };
+
+
+    reader.readAsText(
+      file
+    );
+
+    return;
+
+  }
+
+
+  if(
+    type.startsWith("image/") ||
+    /\.(jpe?g|png|webp|gif)$/i
+      .test(name)
+  ){
+
+    $("status").textContent =
+      "Loading photo…";
+
+
+    const url =
+      URL.createObjectURL(
+        file
+      );
+
+
+    const img =
+      new Image();
+
+
+    img.onload =
+      async () => {
+
+        try{
+
+          const c =
+            document.createElement(
+              "canvas"
+            );
+
+
+          const scale =
+            Math.min(
+              1,
+              720/
+              Math.max(
+                img.width,
+                1
+              )
+            );
+
+
+          c.width =
+            Math.max(
+              64,
+              Math.round(
+                img.width*scale
+              )
+            );
+
+
+          c.height =
+            Math.max(
+              64,
+              Math.round(
+                img.height*scale
+              )
+            );
+
+
+          c.getContext("2d")
+            .drawImage(
+              img,
+              0,
+              0,
+              c.width,
+              c.height
+            );
+
+
+          URL.revokeObjectURL(
+            url
+          );
+
+
+          await buildFromImage(
+            c
+          );
+
+        }catch(e){
+
+          URL.revokeObjectURL(
+            url
+          );
+
+
+          $("status").textContent =
+            "Photo failed";
+
+        }
+
+      };
+
+
+    img.onerror =
+      () => {
+
+        URL.revokeObjectURL(
+          url
+        );
+
+
+        $("status").textContent =
+          "Could not load photo";
+
+      };
+
+
+    img.src =
+      url;
+
+
+    return;
+
+  }
+
+
+  $("status").textContent =
+    "Use JPG, PNG, WebP or JSON";
+
+}
+
+
+/* ========================================================
+   BUILD FROM IMAGE
+======================================================== */
+
+async function buildFromImage(
+  canvas
+){
+
+  $("status").textContent =
+    aiReady
+      ? "AI depth on photo…"
+      : "Building photo…";
+
+
+  const srcW =
+    canvas.width;
+
+  const srcH =
+    canvas.height;
+
+
+  const targetW =
+    Math.min(
+      560,
+      Math.max(
+        280,
+        srcW
+      )
+    );
+
+
+  const scale =
+    targetW/srcW;
+
+
+  const w =
+    Math.round(
+      srcW*scale
+    );
+
+
+  const h =
+    Math.round(
+      srcH*scale
+    );
+
+
+  const work =
+    document.createElement(
+      "canvas"
+    );
+
+
+  work.width =
+    w;
+
+  work.height =
+    h;
+
+
+  const wx =
+    work.getContext(
+      "2d",
+      {
+        willReadFrequently:true
+      }
+    );
+
+
+  wx.drawImage(
+    canvas,
+    0,
+    0,
+    w,
+    h
+  );
+
+
+  let pix;
+
+
+  try{
+
+    pix =
+      wx.getImageData(
+        0,
+        0,
+        w,
+        h
+      ).data;
+
+  }catch(e){
+
+    $("status").textContent =
+      "Cannot read photo";
+
+    return;
+
+  }
+
+
+  const pos=[];
+  const col=[];
+
+
+  let depth=null;
+
+
+  if(aiReady){
+
+    try{
+
+      depth =
+        await depthMap(
+          work
+        );
+
+    }catch(e){}
+
+  }
+
+
+  if(depth){
+
+    const st =
+      Math.max(
+        1,
+        Math.floor(
+          Math.min(
+            w,
+            h
+          )/320
+        )
+      );
+
+
+    for(
+      let y=0;
+      y<h &&
+      pos.length/3<
+      WORLD_MAX;
+      y+=st
+    ){
+
+      for(
+        let x=0;
+        x<w &&
+        pos.length/3<
+        WORLD_MAX;
+        x+=st
+      ){
+
+        const dv =
+          depth[
+            y*w+x
+          ];
+
+
+        if(
+          dv<.02 ||
+          dv>.97
+        ){
+
+          continue;
+
+        }
+
+
+        const i =
+          (y*w+x)*4;
+
+
+        const r =
+          pix[i]/255;
+
+        const g =
+          pix[i+1]/255;
+
+        const b =
+          pix[i+2]/255;
+
+
+        const L =
+          .299*r+
+          .587*g+
+          .114*b;
+
+
+        if(
+          L<.025 ||
+          L>.985
+        ){
+
+          continue;
+
+        }
+
+
+        const avg =
+          (r+g+b)/3;
+
+
+        pos.push(
+
+          ((w-x)/w*2-1)
+          *2.12,
+
+          (-(y/h*2-1))
+          *1.82+.25,
+
+          (dv-.32)
+          *DS*.72
+
+        );
+
+
+        col.push(
+
+          Math.min(
+            1,
+            (
+              avg+
+              (r-avg)*1.30
+            )*1.14+.03
+          ),
+
+          Math.min(
+            1,
+            (
+              avg+
+              (g-avg)*1.24
+            )*1.14+.03
+          ),
+
+          Math.min(
+            1,
+            (
+              avg+
+              (b-avg)*1.22
+            )*1.16+.05
+          )
+
+        );
+
+      }
+
+    }
+
+  }
+
+
+  /*
+    Fallback if AI depth didn't
+    produce enough points.
+  */
+
+  if(
+    pos.length/3<400
+  ){
+
+    pos.length=0;
+    col.length=0;
+
+
+    const step =
+      Math.max(
+        1,
+        Math.floor(
+          Math.min(
+            w,
+            h
+          )/280
+        )
+      );
+
+
+    for(
+      let y=0;
+      y<h &&
+      pos.length/3<
+      WORLD_MAX;
+      y+=step
+    ){
+
+      for(
+        let x=0;
+        x<w &&
+        pos.length/3<
+        WORLD_MAX;
+        x+=step
+      ){
+
+        const i =
+          (y*w+x)*4;
+
+
+        const r =
+          pix[i]/255;
+
+        const g =
+          pix[i+1]/255;
+
+        const b =
+          pix[i+2]/255;
+
+
+        const L =
+          .299*r+
+          .587*g+
+          .114*b;
+
+
+        if(
+          L<.03 ||
+          L>.975
+        ){
+
+          continue;
+
+        }
+
+
+        let edge=0;
+
+
+        if(
+          x>=2 &&
+          x<w-2 &&
+          y>=2 &&
+          y<h-2
+        ){
+
+          const lL =
+            .299*
+            pix[i-4]/255+
+            .587*
+            pix[i-3]/255+
+            .114*
+            pix[i-2]/255;
+
+
+          const lR =
+            .299*
+            pix[i+4]/255+
+            .587*
+            pix[i+5]/255+
+            .114*
+            pix[i+6]/255;
+
+
+          const lU =
+            .299*
+            pix[
+              i-w*4
+            ]/255+
+            .587*
+            pix[
+              i-w*4+1
+            ]/255+
+            .114*
+            pix[
+              i-w*4+2
+            ]/255;
+
+
+          const lD =
+            .299*
+            pix[
+              i+w*4
+            ]/255+
+            .587*
+            pix[
+              i+w*4+1
+            ]/255+
+            .114*
+            pix[
+              i+w*4+2
+            ]/255;
+
+
+          edge =
+            Math.min(
+              1,
+              (
+                Math.abs(
+                  lL-lR
+                )
+                +
+                Math.abs(
+                  lU-lD
+                )
+              )*2.6
+            );
+
+        }
+
+
+        const d =
+          Math.pow(
+            1-L,
+            1.05
+          )*.5
+          +
+          edge*.78;
+
+
+        pos.push(
+
+          ((w-x)/w*2-1)
+          *2.08,
+
+          (-(y/h*2-1))
+          *1.78+.28,
+
+          (d-.24)
+          *DS*.62
+
+        );
+
+
+        col.push(
+
+          Math.min(
+            1,
+            r*1.14+.03
+          ),
+
+          Math.min(
+            1,
+            g*1.14+.03
+          ),
+
+          Math.min(
+            1,
+            b*1.16+.05
+          )
+
+        );
+
+      }
+
+    }
+
+  }
+
+
+  if(
+    pos.length/3<80
+  ){
+
+    $("status").textContent =
+      "Photo too dark";
+
+    return;
+
+  }
+
+
+  showWorld(
+    pos,
+    col
+  );
+
+}
+
+
+/* ========================================================
+   CONNECTION PANEL
+======================================================== */
+
+function openConnect(){
+
+  $("connectPanel")
+    .classList
+    .add("show");
+
+
+  const savedServer =
+    localStorage.getItem(
+      "hyperstream_server"
+    );
+
+
+  if(savedServer){
+
+    $("serverUrl").value =
+      savedServer;
+
+  }
+
+
+  const savedRoom =
+    localStorage.getItem(
+      "hyperstream_room"
+    );
+
+
+  if(savedRoom){
+
+    $("roomId").value =
+      savedRoom;
+
+  }
+
+}
+
+
+function closeConnect(){
+
+  $("connectPanel")
+    .classList
+    .remove("show");
+
+}
+
+
+/* ========================================================
+   WEBRTC SIGNALING
+======================================================== */
+
+function setConnection(
+  state,
+  text
+){
+
+  const indicator =
+    $("connection");
+
+
+  const dot =
+    $("connectionDot");
+
+
+  const label =
+    $("connectionText");
+
+
+  indicator.classList.add(
+    "show"
+  );
+
+
+  dot.className =
+    "connectionDot";
+
+
+  if(
+    state==="connected"
+  ){
+
+    dot.classList.add(
+      "connected"
+    );
+
+  }
+
+
+  if(
+    state==="waiting"
+  ){
+
+    dot.classList.add(
+      "waiting"
+    );
+
+  }
+
+
+  label.textContent =
+    text;
+
+}
+
+
+/* ========================================================
+   CREATE PEER
+======================================================== */
+
+function createPeer(){
+
+  peer =
+    new RTCPeerConnection({
+
+      iceServers:[
+        {
+          urls:
+            "stun:stun.l.google.com:19302"
+        },
+        {
+          urls:
+            "stun:stun1.l.google.com:19302"
+        }
+      ]
+
+    });
+
+
+  peer.onicecandidate =
+    event => {
+
+      if(
+        event.candidate &&
+        ws &&
+        ws.readyState===WebSocket.OPEN
+      ){
+
+        sendSignal({
+
+          type:"ice",
+
+          candidate:
+            event.candidate
+
+        });
+
+      }
+
+    };
+
+
+  peer.onconnectionstatechange =
+    () => {
+
+      const state =
+        peer.connectionState;
+
+
+      if(
+        state==="connected"
+      ){
+
+        peerReady=true;
+
+        setConnection(
+          "connected",
+          "iPhone camera connected"
+        );
+
+
+        $("status").textContent =
+          "Remote camera connected";
+
+      }
+
+
+      if(
+        state==="connecting"
+      ){
+
+        setConnection(
+          "waiting",
+          "Connecting camera…"
+        );
+
+      }
+
+
+      if(
+        state==="disconnected" ||
+        state==="failed" ||
+        state==="closed"
+      ){
+
+        peerReady=false;
+
+        setConnection(
+          "waiting",
+          "Camera disconnected"
+        );
+
+      }
+
+    };
+
+
+  peer.ontrack =
+    event => {
+
+      if(
+        event.streams &&
+        event.streams[0]
+      ){
+
+        remoteStream =
+          event.streams[0];
+
+      }else{
+
+        if(!remoteStream){
+
+          remoteStream =
+            new MediaStream();
+
+        }
+
+        remoteStream.addTrack(
+          event.track
+        );
+
+      }
+
+
+      remoteVideo.srcObject =
+        remoteStream;
+
+
+      remoteVideo.play()
+        .catch(
+          ()=>{}
+        );
+
+
+      activeCameraMode =
+        "remote";
+
+
+      ready=true;
+
+
+      $("preview").srcObject =
+        remoteStream;
+
+
+      $("preview").style.display =
+        "block";
+
+
+      setConnection(
+        "connected",
+        "Remote iPhone camera"
+      );
+
+    };
+
+}
+
+
+/* ========================================================
+   SIGNAL SEND
+======================================================== */
+
+function sendSignal(
+  data
+){
+
+  if(
+    !ws ||
+    ws.readyState !==
+    WebSocket.OPEN
+  ){
+
+    return;
+
+  }
+
+
+  ws.send(
+    JSON.stringify({
+      ...data,
+      room,
+      role:peerRole
+    })
+  );
+
+}
+
+
+/* ========================================================
+   CONNECT VIEWER
+======================================================== */
+
+async function connectAsViewer(){
+
+  peerRole =
+    "viewer";
+
+
+  await connectSignal();
+
+
+  createPeer();
+
+
+  $("status").textContent =
+    "Waiting for iPhone…";
+
+}
+
+
+/* ========================================================
+   CONNECT IPHONE CAMERA
+======================================================== */
+
+async function connectAsCamera(){
+
+  peerRole =
+    "camera";
+
+
+  await startCamera();
+
+
+  if(!localStream){
+
+    $("status").textContent =
+      "Camera unavailable";
+
+    return;
+
+  }
+
+
+  await connectSignal();
+
+
+  createPeer();
+
+
+  localStream
+    .getTracks()
+    .forEach(
+      track => {
+
+        peer.addTrack(
+          track,
+          localStream
+        );
+
+      }
+    );
+
+
+  setConnection(
+    "waiting",
+    "Waiting for viewer…"
+  );
+
+
+  $("status").textContent =
+    "iPhone camera ready";
+
+}
+
+
+/* ========================================================
+   CONNECT SIGNAL SERVER
+======================================================== */
+
+async function connectSignal(){
+
+  serverURL =
+    $("serverUrl")
+      .value
+      .trim();
+
+
+  room =
+    $("roomId")
+      .value
+      .trim() ||
+      "hyperstream";
+
+
+  if(!serverURL){
+
+    $("status").textContent =
+      "Enter signaling server URL";
+
+    throw new Error(
+      "Missing server URL"
+    );
+
+  }
+
+
+  localStorage.setItem(
+    "hyperstream_server",
+    serverURL
+  );
+
+
+  localStorage.setItem(
+    "hyperstream_room",
+    room
+  );
+
+
+  if(
+    ws &&
+    ws.readyState===
+    WebSocket.OPEN
+  ){
+
+    ws.close();
+
+  }
+
+
+  setConnection(
+    "waiting",
+    "Connecting signaling…"
+  );
+
+
+  await new Promise(
+    (resolve,reject) => {
+
+      let settled=false;
+
+
+      ws =
+        new WebSocket(
+          serverURL
+        );
+
+
+      ws.onopen =
+        () => {
+
+          if(!settled){
+
+            settled=true;
+
+            resolve();
+
+          }
+
+
+          sendSignal({
+
+            type:"join"
+
+          });
+
+        };
+
+
+      ws.onerror =
+        () => {
+
+          if(!settled){
+
+            settled=true;
+
+            reject(
+              new Error(
+                "WebSocket failed"
+              )
+            );
+
+          }
+
+        };
+
+
+      ws.onclose =
+        () => {
+
+          setConnection(
+            "waiting",
+            "Signaling disconnected"
+          );
+
+        };
+
+
+      ws.onmessage =
+        async event => {
+
+          try{
+
+            const message =
+              JSON.parse(
+                event.data
+              );
+
+
+            await handleSignal(
+              message
+            );
+
+          }catch(e){
+
+            console.error(
+              "Signal error",
+              e
+            );
+
+          }
+
+        };
+
+    }
+  ).catch(
+    error => {
+
+      $("status").textContent =
+        "Could not connect to server";
+
+      setConnection(
+        "waiting",
+        "Signaling unavailable"
+      );
+
+
+      throw error;
+
+    }
+  );
+
+}
+
+
+/* ========================================================
+   SIGNAL MESSAGE HANDLER
+======================================================== */
+
+async function handleSignal(
+  message
+){
+
+  if(
+    message.room &&
+    message.room !== room
+  ){
+
+    return;
+
+  }
+
+
+  /*
+    Ignore our own role.
+  */
+
+  if(
+    message.role ===
+    peerRole
+  ){
+
+    return;
+
+  }
+
+
+  if(
+    message.type ===
+    "peer-joined"
+  ){
+
+    if(
+      peerRole ===
+      "camera"
+    ){
+
+      await makeOffer();
+
+    }
+
+    return;
+
+  }
+
+
+  if(
+    message.type ===
+    "offer"
+  ){
+
+    if(
+      peerRole !==
+      "viewer"
+    ){
+
+      return;
+
+    }
+
+
+    if(!peer){
+
+      createPeer();
+
+    }
+
+
+    await peer.setRemoteDescription(
+      new RTCSessionDescription(
+        message.offer
+      )
+    );
+
+
+    await flushCandidates();
+
+
+    const answer =
+      await peer.createAnswer();
+
+
+    await peer.setLocalDescription(
+      answer
+    );
+
+
+    sendSignal({
+
+      type:"answer",
+
+      answer:
+        peer.localDescription
+
+    });
+
+
+    return;
+
+  }
+
+
+  if(
+    message.type ===
+    "answer"
+  ){
+
+    if(
+      peerRole !==
+      "camera"
+    ){
+
+      return;
+
+    }
+
+
+    if(!peer){
+
+      return;
+
+    }
+
+
+    await peer.setRemoteDescription(
+      new RTCSessionDescription(
+        message.answer
+      )
+    );
+
+
+    await flushCandidates();
+
+
+    return;
+
+  }
+
+
+  if(
+    message.type ===
+    "ice"
+  ){
+
+    if(
+      !peer
+    ){
+
+      return;
+
+    }
+
+
+    if(
+      peer.remoteDescription &&
+      peer.remoteDescription.type
+    ){
+
+      try{
+
+        await peer.addIceCandidate(
+          new RTCIceCandidate(
+            message.candidate
+          )
+        );
+
+      }catch(e){}
+
+    }else{
+
+      remoteCandidateQueue.push(
+        message.candidate
+      );
+
+    }
+
+  }
+
+}
+
+
+/* ========================================================
+   OFFER
+======================================================== */
+
+async function makeOffer(){
+
+  if(
+    !peer ||
+    peerRole !==
+    "camera"
+  ){
+
+    return;
+
+  }
+
+
+  const offer =
+    await peer.createOffer({
+
+      offerToReceiveAudio:false,
+      offerToReceiveVideo:false
+
+    });
+
+
+  await peer.setLocalDescription(
+    offer
+  );
+
+
+  sendSignal({
+
+    type:"offer",
+
+    offer:
+      peer.localDescription
+
+  });
+
+}
+
+
+/* ========================================================
+   FLUSH ICE
+======================================================== */
+
+async function flushCandidates(){
+
+  if(!peer){
+
+    return;
+
+  }
+
+
+  const list =
+    remoteCandidateQueue.splice(
+      0
+    );
+
+
+  for(
+    const candidate
+    of list
+  ){
+
+    try{
+
+      await peer.addIceCandidate(
+        new RTCIceCandidate(
+          candidate
+        )
+      );
+
+    }catch(e){}
+
+  }
+
+}
+
+
+/* ========================================================
+   ENTER VR
+======================================================== */
+
+async function enterVR(){
+
+  if(
+    !navigator.xr
+  ){
+
+    $("status").textContent =
+      "WebXR unavailable";
+
+    return;
+
+  }
+
+
+  try{
+
+    vrSession =
+      await navigator.xr.requestSession(
+        "immersive-vr",
+        {
+          requiredFeatures:[]
+        }
+      );
+
+
+    renderer.xr.enabled =
+      true;
+
+
+    renderer.xr.setSession(
+      vrSession
+    );
+
+
+    vrSession.addEventListener(
+      "end",
+      () => {
+
+        vrSession=null;
+
+        renderer.xr.enabled =
+          false;
+
+      }
+    );
+
+
+    $("status").textContent =
+      "VR mode active";
+
+  }catch(e){
+
+    $("status").textContent =
+      "VR could not start";
+
+  }
+
+}
+
+
+/* ========================================================
+   OPTIONAL JSON EXPORT
+======================================================== */
+
+function exportJSON(){
+
+  if(!world){
+
+    return;
+
+  }
+
+
+  const position =
+    world.geometry
+      .getAttribute(
+        "position"
+      ).array;
+
+
+  const colors =
+    world.geometry
+      .getAttribute(
+        "color"
+      ).array;
+
+
+  const data = {
+
+    hyperstream:
+      "XR",
+
+    version:
+      2,
+
+    created:
+      new Date().toISOString(),
+
+    points:
+      position.length/3,
+
+    pos:
+      Array.from(
+        position
+      ),
+
+    col:
+      Array.from(
+        colors
+      )
+
+  };
+
+
+  const blob =
+    new Blob(
+      [
+        JSON.stringify(
+          data
+        )
+      ],
+      {
+        type:
+          "application/json"
+      }
+    );
+
+
+  const url =
+    URL.createObjectURL(
+      blob
+    );
+
+
+  const a =
+    document.createElement(
+      "a"
+    );
+
+
+  a.href =
+    url;
+
+
+  a.download =
+    "hyperstream_hologram.json";
+
+
+  document.body.appendChild(a);
+
+  a.click();
+
+  a.remove();
+
+
+  setTimeout(
+    () =>
+      URL.revokeObjectURL(url),
+    2000
+  );
+
+}
+
+
+/* ========================================================
+   CLEANUP
+======================================================== */
+
+window.addEventListener(
+  "beforeunload",
+  () => {
+
+    try{
+
+      if(localStream){
+
+        localStream
+          .getTracks()
+          .forEach(
+            t => t.stop()
+          );
+
+      }
+
+
+      if(ws){
+
+        ws.close();
+
+      }
+
+
+      if(peer){
+
+        peer.close();
+
+      }
+
+    }catch(e){}
+
+  }
+);
+
+
+/* ========================================================
+   IMPORTANT GLOBAL EXPORTS
+========================================================
+
+   The HTML buttons use inline onclick handlers.
+   Explicitly attaching the functions to window prevents
+   the module/script scope problem that caused:
+
+   Uncaught ReferenceError:
+   toggleScan is not defined
+
+======================================================== */
+
+window.toggleScan =
+  toggleScan;
+
+window.toggleRec =
+  toggleRec;
+
+window.stopRec =
+  stopRec;
+
+window.buildWorld =
+  buildWorld;
+
+window.clearWorld =
+  clearWorld;
+
+window.shareWorld =
+  shareWorld;
+
+window.onFile =
+  onFile;
+
+window.openConnect =
+  openConnect;
+
+window.closeConnect =
+  closeConnect;
+
+window.connectAsViewer =
+  connectAsViewer;
+
+window.connectAsCamera =
+  connectAsCamera;
+
+window.switchCamera =
+  switchCamera;
+
+window.enterVR =
+  enterVR;
+
+window.exportJSON =
+  exportJSON;
+
+
+/* ========================================================
+   INITIAL UI
+======================================================== */
+
+$("status").textContent =
+  "Tap Scan or Connect iPhone";
+
+
+$("ai").textContent =
+  "loading";
+
+
+/*
+  Make sure the viewer can still
+  work as a normal local camera
+  even without WebRTC.
+*/
+
+if(
+  location.protocol ===
+  "file:"
+){
+
+  console.warn(
+    "Camera/WebRTC normally requires HTTPS or localhost."
+  );
+
+}
+
 </script>
+
 </body>
 </html>
